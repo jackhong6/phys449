@@ -3,6 +3,7 @@
 # MATLAB temp files #
 #####################
 *.m~
+.MATLABDriveTag
 
 ###################
 *.com
