@@ -1,0 +1,18 @@
+classdef StringState
+    %Class that represents a string state
+    %   Detailed explanation goes here
+    
+    properties
+        % The matrix 
+        M
+    end
+    
+    methods
+        function obj = StringState(a, b)
+            %StringState Construct an instance of this class
+            %   a, b are coherent states as defined in CoherentState.m
+            obj.M = a.T * b;
+        end
+    end
+end
+
