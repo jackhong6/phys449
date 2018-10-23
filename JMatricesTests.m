@@ -22,7 +22,7 @@ classdef JMatricesTests < matlab.unittest.TestCase
         end
         
         function testMatrixSizes(tc)
-            for N = 1:5
+            for N = 1:3
                 J = JMatrices(N);
                 tc.verifyEqual(size(J.x), [N, N])
                 tc.verifyEqual(size(J.y), [N, N])
@@ -31,7 +31,7 @@ classdef JMatricesTests < matlab.unittest.TestCase
         end
         
         function testCommutators(tc)
-            for N = 1:5
+            for N = 1:3
                 J = JMatrices(N);
                 tc.verifyEqual(commutator(J.x, J.y), 1i*J.z, 'AbsTol', tc.abs_tol)
                 tc.verifyEqual(commutator(J.y, J.z), 1i*J.x, 'AbsTol', tc.abs_tol)
@@ -40,7 +40,7 @@ classdef JMatricesTests < matlab.unittest.TestCase
         end
         
         function testLargeNCommutators(tc)
-            J = JMatrices(500);
+            J = JMatrices(300);
             tc.verifyEqual(commutator(J.x, J.y), 1i*J.z, 'AbsTol', tc.abs_tol)
             tc.verifyEqual(commutator(J.y, J.z), 1i*J.x, 'AbsTol', tc.abs_tol)
             tc.verifyEqual(commutator(J.z, J.x), 1i*J.y, 'AbsTol', tc.abs_tol)
