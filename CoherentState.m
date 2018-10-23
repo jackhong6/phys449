@@ -1,6 +1,6 @@
 classdef CoherentState
     %Class that represents a coherent state.
-    %   A coherent state is the eigenvector with the largest eigenvalue (j) 
+    %   A coherent state is the eigenvector with the largest eigenvalue (j)
     %   of the Jn matrix.
     
     properties
@@ -25,4 +25,3 @@ classdef CoherentState
         end
     end
 end
-

@@ -1,6 +1,6 @@
 classdef JMatricesTests < matlab.unittest.TestCase
     %% Unit tests for JMatrices class.
-
+    
     properties
         J3; % 3x3 Matrices used for some tests
         abs_tol = 1e-10;  % tolerance for checking floating point equality
@@ -11,7 +11,7 @@ classdef JMatricesTests < matlab.unittest.TestCase
             tc.J3 = JMatrices(3);
         end
     end
-   
+    
     %% Test Methods Block
     methods (Test)
         function test2x2Case(tc)

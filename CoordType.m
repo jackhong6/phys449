@@ -3,4 +3,3 @@ classdef CoordType
         cartesian, spherical
     end
 end
-

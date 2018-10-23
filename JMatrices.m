@@ -1,7 +1,7 @@
 classdef JMatrices
-    % Class containing the three NxN angular momentum operators in the 
+    % Class containing the three NxN angular momentum operators in the
     % |jm> basis where Jz is diagonal.
-    %    Matrices are initialized on object creation. 
+    %    Matrices are initialized on object creation.
     %    For example, to create 3x3 matrices:
     %
     %        J = JMatrices(3);
@@ -9,7 +9,7 @@ classdef JMatrices
     %    To access the three matrices, you can use
     %
     %        J.x, J.y, J.z
-    %    
+    %
     %    or equivalently,
     %
     %        J(1), J(2), J(3)
@@ -38,7 +38,7 @@ classdef JMatrices
         end
         
         function sref = subsref(obj, s)
-            % Overload indexing so that J(1) == J.x, J(2) == J.y and 
+            % Overload indexing so that J(1) == J.x, J(2) == J.y and
             % J(3) == J.z.
             switch s(1).type
                 case '.'
@@ -46,16 +46,16 @@ classdef JMatrices
                 case '()'
                     if length(s) == 1
                         if length(s(1).subs{1}) == 1
-                        switch(s(1).subs{1})
-                            case 1
-                                sref = obj.x;
-                            case 2
-                                sref = obj.y;
-                            case 3
-                                sref = obj.z;
-                            otherwise
-                                error('JMatrices:IndexOutOfRange', 'Index out of range')
-                        end
+                            switch(s(1).subs{1})
+                                case 1
+                                    sref = obj.x;
+                                case 2
+                                    sref = obj.y;
+                                case 3
+                                    sref = obj.z;
+                                otherwise
+                                    error('JMatrices:IndexOutOfRange', 'Index out of range')
+                            end
                         else
                             error('JMatrices:IndexingByVectorsNotSupported', 'Index with scalars only')
                         end
@@ -72,9 +72,9 @@ classdef JMatrices
         end
         
         function Jn = dot(J, n, coordType)
-            % Return Jn, the NxN matrix resulting from the dot product between 
+            % Return Jn, the NxN matrix resulting from the dot product between
             % a unit vector n and the 3 J matrices.
-            % 
+            %
             % ASSUME: n is a 3x1 or 1x3 unit vector. If norm(n) is not 1,
             % then normalize n before applying dot product.
             % If coordType==CoordType.cartesian, n=[x, y, z]
@@ -95,6 +95,6 @@ classdef JMatrices
             end
             
             Jn = n(1)*J.x + n(2)*J.y + n(3)*J.z;
-        end        
+        end
     end
 end

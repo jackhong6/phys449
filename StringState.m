@@ -15,4 +15,3 @@ classdef StringState
         end
     end
 end
-
