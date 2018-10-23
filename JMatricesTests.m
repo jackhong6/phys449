@@ -16,6 +16,7 @@ classdef JMatricesTests < matlab.unittest.TestCase
     methods (Test)
         function test2x2Case(tc)
             J = JMatrices(2);
+            tc.verifyEqual(J.N, 2)
             tc.verifyEqual(J.x, (1/2) .* [0, 1; 1, 0])
             tc.verifyEqual(J.y, (1/2) .* [0, -1i; 1i, 0])
             tc.verifyEqual(J.z, (1/2) .* [1, 0; 0, -1])
@@ -24,6 +25,7 @@ classdef JMatricesTests < matlab.unittest.TestCase
         function testMatrixSizes(tc)
             for N = 1:5
                 J = JMatrices(N);
+                tc.verifyEqual(J.N, N);
                 tc.verifyEqual(size(J.x), [N, N])
                 tc.verifyEqual(size(J.y), [N, N])
                 tc.verifyEqual(size(J.z), [N, N])

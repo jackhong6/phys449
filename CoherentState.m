@@ -12,7 +12,7 @@ classdef CoherentState
     methods
         function obj = CoherentState(J, n, coordType)
             % Constructor:
-            obj.N = length(J.x);
+            obj.N = J.N;
             obj.n = n;
             obj.coordType = coordType;
             j = (obj.N - 1) / 2;

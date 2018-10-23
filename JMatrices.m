@@ -15,14 +15,15 @@ classdef JMatrices
     %        J(1), J(2), J(3)
     
     properties
-        % NxN matrices
-        x, y, z
+        % x, y, z are NxN matrices
+        x, y, z, N
     end
     
     methods
         function J = JMatrices(N)
             % Constructor. Initialize the 3 NxN J.x, J.y, and J.z matrices
             % in the basis where J.z is diagonal.
+            J.N = N;
             j = (N-1) / 2;
             m = j : -1 : -j;
             
