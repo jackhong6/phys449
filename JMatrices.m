@@ -15,15 +15,14 @@ classdef JMatrices
     %        J(1), J(2), J(3)
     
     properties
-        % x, y, z are NxN matrices
-        x, y, z, N
+        % x, y, z are NxN angular momentum matrices
+        x, y, z
     end
     
     methods
         function J = JMatrices(N)
             % Constructor. Initialize the 3 NxN J.x, J.y, and J.z matrices
             % in the basis where J.z is diagonal.
-            J.N = N;
             j = (N-1) / 2;
             m = j : -1 : -j;
             
@@ -96,16 +95,6 @@ classdef JMatrices
             end
             
             Jn = n(1)*J.x + n(2)*J.y + n(3)*J.z;
-        end
-        
-        function c = commutator(~, M1, M2)
-            c = M1*M2 - M2*M1;
-        end
-        
-        function result = laplacian(J, Phi)
-            result = J.commutator(J.x, J.commutator(J.x, Phi))...
-                   + J.commutator(J.y, J.commutator(J.y, Phi))...
-                   + J.commutator(J.z, J.commutator(J.z, Phi));
-        end
+        end        
     end
 end

@@ -16,7 +16,6 @@ classdef JMatricesTests < matlab.unittest.TestCase
     methods (Test)
         function test2x2Case(tc)
             J = JMatrices(2);
-            tc.verifyEqual(J.N, 2)
             tc.verifyEqual(J.x, (1/2) .* [0, 1; 1, 0])
             tc.verifyEqual(J.y, (1/2) .* [0, -1i; 1i, 0])
             tc.verifyEqual(J.z, (1/2) .* [1, 0; 0, -1])
@@ -25,7 +24,6 @@ classdef JMatricesTests < matlab.unittest.TestCase
         function testMatrixSizes(tc)
             for N = 1:5
                 J = JMatrices(N);
-                tc.verifyEqual(J.N, N);
                 tc.verifyEqual(size(J.x), [N, N])
                 tc.verifyEqual(size(J.y), [N, N])
                 tc.verifyEqual(size(J.z), [N, N])
@@ -35,17 +33,17 @@ classdef JMatricesTests < matlab.unittest.TestCase
         function testCommutators(tc)
             for N = 1:5
                 J = JMatrices(N);
-                tc.verifyEqual(J.commutator(J.x, J.y), 1i*J.z, 'AbsTol', tc.abs_tol)
-                tc.verifyEqual(J.commutator(J.y, J.z), 1i*J.x, 'AbsTol', tc.abs_tol)
-                tc.verifyEqual(J.commutator(J.z, J.x), 1i*J.y, 'AbsTol', tc.abs_tol)
+                tc.verifyEqual(commutator(J.x, J.y), 1i*J.z, 'AbsTol', tc.abs_tol)
+                tc.verifyEqual(commutator(J.y, J.z), 1i*J.x, 'AbsTol', tc.abs_tol)
+                tc.verifyEqual(commutator(J.z, J.x), 1i*J.y, 'AbsTol', tc.abs_tol)
             end
         end
         
         function testLargeNCommutators(tc)
             J = JMatrices(500);
-            tc.verifyEqual(J.commutator(J.x, J.y), 1i*J.z, 'AbsTol', tc.abs_tol)
-            tc.verifyEqual(J.commutator(J.y, J.z), 1i*J.x, 'AbsTol', tc.abs_tol)
-            tc.verifyEqual(J.commutator(J.z, J.x), 1i*J.y, 'AbsTol', tc.abs_tol)
+            tc.verifyEqual(commutator(J.x, J.y), 1i*J.z, 'AbsTol', tc.abs_tol)
+            tc.verifyEqual(commutator(J.y, J.z), 1i*J.x, 'AbsTol', tc.abs_tol)
+            tc.verifyEqual(commutator(J.z, J.x), 1i*J.y, 'AbsTol', tc.abs_tol)
         end
         
         function testIndexing(tc)
