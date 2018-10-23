@@ -1,6 +1,6 @@
 classdef StringState
     %Class that represents a string state.
-    %   A string state the outer product of two coherent states.
+    %   A string state is the outer product of two coherent states.
     
     properties
         % The matrix representation in the Jz basis.
