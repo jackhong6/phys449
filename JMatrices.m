@@ -8,7 +8,7 @@ classdef JMatrices
     %
     %    To access the three matrices, you can use
     %
-    %        J.x, J.y, J.z
+    %        J.x, J.y, J.zx
     %
     %    or equivalently,
     %
