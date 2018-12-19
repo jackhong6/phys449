@@ -11,7 +11,11 @@ classdef StringState
         function obj = StringState(a, b)
             %StringState Construct an instance of this class
             %   a, b are coherent states as defined in CoherentState.m
-            obj.M = a.v * ctranspose(b.v) + b.v * ctranspose(a.v);
+            obj.M = (a.v * b.v') + (b.v * a.v');
+            
+            % Normalize the string state so that Tr(A' * A) = 1
+            A = trace(obj.M' * obj.M);
+            obj.M = obj.M / sqrt(A); 
         end
     end
 end

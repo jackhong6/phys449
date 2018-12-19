@@ -1,30 +1,33 @@
-classdef JMatrices
-    % Class containing the three NxN angular momentum operators in the
-    % |jm> basis where Jz is diagonal.
-    %    Matrices are initialized on object creation.
-    %    For example, to create 3x3 matrices:
+classdef FuzzySphere
+    % FUZZYSPHERE The fuzzy sphere of radius R with N quantum cells
+    % represented by three NxN angular momentum matrices in the |jm> basis 
+    % where Jz is diagonal.
     %
-    %        J = JMatrices(3);
+    %    For example, to create the fuzzy sphere of radius 5 with 3 cells:
+    %
+    %        fs = FuzzySphere(5, 3);
     %
     %    To access the three matrices, you can use
     %
-    %        J.x, J.y, J.zx
+    %        fs.x, fs.y, fs.z
     %
     %    or equivalently,
     %
-    %        J(1), J(2), J(3)
+    %        fs(1), fs(2), fs(3)
     
     properties
-        % x, y, z are NxN angular momentum matrices
-        x, y, z
+        % x, y, z are NxN matrices. R is the radius of the sphere.
+        x, y, z, R
     end
     
     methods
-        function J = JMatrices(N)
-            % Constructor. Initialize the 3 NxN J.x, J.y, and J.z matrices
-            % in the basis where J.z is diagonal.
-            j = (N-1) / 2;
+        function fs = FuzzySphere(R, N)
+            % CONSTRUCTOR Initialize the 3 NxN matrices
+            % in the basis where fs.z is diagonal.
+            j = (N - 1) / 2;
             m = j : -1 : -j;
+            
+            A = R / sqrt(j * (j + 1));
             
             cp = sqrt((j - m(2:end)) .* (j + m(2:end) + 1));
             Jplus = diag(cp, 1);
@@ -32,9 +35,10 @@ classdef JMatrices
             cm = sqrt((j + m(1:end-1)) .* (j - m(1:end-1) + 1));
             Jminus = diag(cm, -1);
             
-            J.x = (Jplus + Jminus) / 2;
-            J.y = (Jplus - Jminus) / 2i;
-            J.z = diag(m);
+            fs.R = R;
+            fs.x = A * (Jplus + Jminus) / 2;
+            fs.y = A * (Jplus - Jminus) / 2i;
+            fs.z = A * diag(m);
         end
         
         function sref = subsref(obj, s)
@@ -54,26 +58,26 @@ classdef JMatrices
                                 case 3
                                     sref = obj.z;
                                 otherwise
-                                    error('JMatrices:IndexOutOfRange', 'Index out of range')
+                                    error('FuzzySphere:IndexOutOfRange', 'Index out of range')
                             end
                         else
-                            error('JMatrices:IndexingByVectorsNotSupported', 'Index with scalars only')
+                            error('FuzzySphere:IndexingByVectorsNotSupported', 'Index with scalars only')
                         end
                     else
                         % Use built-in for any other expression
                         [sref{1:nargout}] = builtin('subsref',obj,s);
                     end
                 case '{}'
-                    error('JMatrices:subsref',...
+                    error('FuzzySphere:subsref',...
                         'Not a supported subscripted reference')
                 otherwise
                     error('Not a valid indexing expression')
             end
         end
         
-        function Jn = dot(J, n, coordType)
-            % Return Jn, the NxN matrix resulting from the dot product between
-            % a unit vector n and the 3 J matrices.
+        function Xn = dot(fs, n, coordType)
+            % FUZZYSPHERE.DOT Return the NxN matrix resulting from the dot
+            % product between a unit vector n and the 3 x,y,z matrices.
             %
             % ASSUME: n is a 3x1 or 1x3 unit vector. If norm(n) is not 1,
             % then normalize n before applying dot product.
@@ -94,7 +98,7 @@ classdef JMatrices
                     [n(1), n(2), n(3)] = sph2cart(n(1), n(2), n(3));
             end
             
-            Jn = n(1)*J.x + n(2)*J.y + n(3)*J.z;
+            Xn = n(1)*fs.x + n(2)*fs.y + n(3)*fs.z;
         end
     end
 end
