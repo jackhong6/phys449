@@ -1,4 +1,4 @@
-classdef FuzzySphereTests < matlab.unittest.TestCase
+classdef TestFuzzySphere < matlab.unittest.TestCase
     %% Unit tests for FuzzySphere class.
     
     properties
@@ -34,12 +34,13 @@ classdef FuzzySphereTests < matlab.unittest.TestCase
         
         function testCommutators(tc)
             for N = 2:5
-                R = 2;
-                a = 2 * R / sqrt(N^2 - 1);
-                fs = FuzzySphere(R, N);
-                tc.verifyEqual(commutator(fs.x, fs.y), 1i*fs.z*a, 'AbsTol', tc.abs_tol)
-                tc.verifyEqual(commutator(fs.y, fs.z), 1i*fs.x*a, 'AbsTol', tc.abs_tol)
-                tc.verifyEqual(commutator(fs.z, fs.x), 1i*fs.y*a, 'AbsTol', tc.abs_tol)
+                for R = 1:3
+                    a = 2 * R / sqrt(N^2 - 1);
+                    fs = FuzzySphere(R, N);
+                    tc.verifyEqual(commutator(fs.x, fs.y), 1i*fs.z*a, 'AbsTol', tc.abs_tol)
+                    tc.verifyEqual(commutator(fs.y, fs.z), 1i*fs.x*a, 'AbsTol', tc.abs_tol)
+                    tc.verifyEqual(commutator(fs.z, fs.x), 1i*fs.y*a, 'AbsTol', tc.abs_tol)
+                end
             end
         end
         

@@ -24,21 +24,23 @@ classdef FuzzySphere
         function fs = FuzzySphere(R, N)
             % CONSTRUCTOR Initialize the 3 NxN matrices
             % in the basis where fs.z is diagonal.
-            j = (N - 1) / 2;
-            m = j : -1 : -j;
-            
-            A = R / sqrt(j * (j + 1));
-            
-            cp = sqrt((j - m(2:end)) .* (j + m(2:end) + 1));
-            Jplus = diag(cp, 1);
-            
-            cm = sqrt((j + m(1:end-1)) .* (j - m(1:end-1) + 1));
-            Jminus = diag(cm, -1);
-            
-            fs.R = R;
-            fs.x = A * (Jplus + Jminus) / 2;
-            fs.y = A * (Jplus - Jminus) / 2i;
-            fs.z = A * diag(m);
+            if nargin > 0
+                j = (N - 1) / 2;
+                m = j : -1 : -j;
+
+                A = R / sqrt(j * (j + 1));
+
+                cp = sqrt((j - m(2:end)) .* (j + m(2:end) + 1));
+                Jplus = diag(cp, 1);
+
+                cm = sqrt((j + m(1:end-1)) .* (j - m(1:end-1) + 1));
+                Jminus = diag(cm, -1);
+
+                fs.R = R;
+                fs.x = A * (Jplus + Jminus) / 2;
+                fs.y = A * (Jplus - Jminus) / 2i;
+                fs.z = A * diag(m);
+            end
         end
         
         function sref = subsref(obj, s)
