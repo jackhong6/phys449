@@ -1,13 +1,13 @@
 classdef StringState
     % STRINGSTATE A string state is the outer product of two coherent states.
+    %   It is usually represented by an NxN hermitian matrix, but is stored
+    %   as a parametrization vector p described below.
     
-    properties (Access = private)
-        % M is the matrix representation in the Jz basis.
-        % p is the parametrization of M by a vector of length N^2.
-        % These properties are private to ensure that they are always in
-        % sync and represent the same string state.
+    properties
+        % p is the parametrization of the string state by a vector of length N^2.
         %
         % Example: for a 3x3 string state the parametrization is
+        %
         %      p                          M
         %     _  _
         %    | x1 |
@@ -20,7 +20,7 @@ classdef StringState
         %    | x8 |       ?                                  ?
         %    | x9 |
         %     ?  ?
-        M, p
+        p
     end
     
     methods
@@ -30,17 +30,15 @@ classdef StringState
             if nargin == 2
                 % If there are two arguments, then assume they are of type 
                 % CoherentState 
-                obj.M = (varargin{1}.v * varargin{2}.v') ...
+                M = (varargin{1}.v * varargin{2}.v') ...
                     + (varargin{2}.v * varargin{1}.v');
                 
                 % Normalize the string state so that Tr(A' * A) = 1
-                A = trace(obj.M' * obj.M);
-                obj.M = obj.M / sqrt(A);
+                A = trace(M' * M);
+                M = M / sqrt(A);
                 
-                obj.p = obj.M2p(obj.M);
-                
+                obj.p = obj.M2p(M);        
             elseif nargin == 1
-                obj.M = p2M(varargin{1});
                 obj.p = varargin{1};
             else
                 return
@@ -48,7 +46,7 @@ classdef StringState
         end
         
         function M = getM(self)
-            M = self.M;
+            M = self.p2M(self.p);
         end
     end
     

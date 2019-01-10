@@ -16,7 +16,8 @@ classdef FuzzySphere
     %        fs(1), fs(2), fs(3)
     
     properties
-        % x, y, z are NxN matrices. R is the radius of the sphere.
+        % x, y, z are NxN matrices. 
+        % R is the radius of the sphere.
         x, y, z, R
     end
     
