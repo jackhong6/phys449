@@ -78,7 +78,13 @@ classdef StringState
             % M2P Return the vector parametrization of the matrix M.
             %assert(ishermitian(M));
             N = size(M, 1);
-            p = zeros(N^2, 1);
+            
+            if isnumeric(M)
+                p = zeros(N^2, 1);
+            else
+                p = sym(zeros(N^2, 1));
+            end
+                
             p(1:N) = diag(M) / sqrt(2);
             start_ind = N + 1;
             
