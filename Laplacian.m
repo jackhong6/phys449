@@ -23,11 +23,14 @@ classdef Laplacian < handle
         function obj = Laplacian(fs)
             %LAPLACIAN Construct an instance of this class
             %   fs is an instance of FuzzySphere
-            %   Initialize K and find V and D. Use bisymmetric property.
+            %   Initialize K and find V and D. Use bisymmetric property of K.
             obj.fs = fs;
+            
             N = size(fs.x, 1);
-
+            
             obj.K = cell(N, 1);
+            obj.V = cell(N, 1);
+            obj.D = cell(N, 1);
             
             % Calculate the first block
             obj.K{1} = zeros(N);
@@ -48,6 +51,8 @@ classdef Laplacian < handle
                 obj.K{1}(N-jj+1, N-ii+1) = Kij;
                 obj.K{1}(N-ii+1, N-jj+1) = Kij;
             end
+            
+            [obj.V{1}, obj.D{1}] = eigs(obj.K{1}, N);
             
             % blocks 2 to N
             offset = N;
@@ -72,6 +77,7 @@ classdef Laplacian < handle
                    obj.K{blk}(blk_size-ii+1, blk_size-jj+1) = Kij;
                end
                
+               [obj.V{blk}, obj.D{blk}] = eigs(obj.K{blk}, blk_size);
                offset = offset + blk_size;
             end
         end
@@ -91,6 +97,31 @@ classdef Laplacian < handle
             K = blkdiag(self.K{:});
         end
         
+        function V = getFullV(self)
+            V = blkdiag(self.V{:});
+        end
+        
+        function D = getFullD(self)
+            D = blkdiag(self.D{:});
+        end
+        
+        function Kv = Ktimes(self, v)
+            % Return Kv, the result of left multiplying v by K
+            N = size(self.fs.x, 1);
+            assert(isvector(v) && length(v) == N^2)
+            v = v(:);
+            Kv = zeros(N^2, 1);
+            Kv(1:N) = self.K{1} * v(1:N);
+            
+            offset = N;
+            for blk = 2:N
+                blk_size = 2 * (N - blk + 1);
+                start_ind = offset+1;
+                end_ind = offset + blk_size;
+                Kv(start_ind : end_ind) = self.K{blk} * v(start_ind:end_ind);
+                offset = offset + blk_size;
+            end
+        end
 % ==== Faster code that is still pretty slow. Calculates every element. ===      
 %        function obj = Laplacian(fs)
 %             %LAPLACIAN Construct an instance of this class

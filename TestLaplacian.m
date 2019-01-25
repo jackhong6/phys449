@@ -11,6 +11,7 @@ classdef TestLaplacian < matlab.unittest.TestCase
             fs = FuzzySphere(3, 2);
             la = Laplacian(fs);
             tc.verifyEqual(la.getFullK, (1/3^2) * [1 -1 0 0; -1 1 0 0; 0 0 2 0; 0 0 0 2], 'AbsTol', tc.abstol)
+            tc.verifyEqual(la.getFullV, [-1/sqrt(2) -1/sqrt(2) 0 0; 1/sqrt(2) -1/sqrt(2) 0 0; 0 0 1 0; 0 0 0 1]);
         end
         
         function test3x3Case(tc)
@@ -23,12 +24,12 @@ classdef TestLaplacian < matlab.unittest.TestCase
         end
         
         function testLaplacianMatchesKMatrix(tc)
-            fs = FuzzySphere(1, 4);
+            fs = FuzzySphere(1, 7);
             la = Laplacian(fs);
-            p = 1:16;
+            p = 1:49;
             Phi = StringState(p);
             p1 = -StringState.M2p(Laplacian.do(fs, Phi.getM));
-            p2 = la.getFullK * p';
+            p2 = la.Ktimes(p);
             tc.verifyEqual(p1, p2, 'AbsTol', tc.abstol);
         end
     end
