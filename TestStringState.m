@@ -2,7 +2,7 @@ classdef TestStringState < matlab.unittest.TestCase
     %% Unit tests for CoherentState and StringState classes.
     
     properties
-        abs_tol = 1e-12;  % tolerance for checking floating point equality
+        abstol = 1e-12;  % tolerance for checking floating point equality
     end
     
     %% Test Methods Block
@@ -16,9 +16,9 @@ classdef TestStringState < matlab.unittest.TestCase
             a = CoherentState(fs, nN, CoordType.spherical);
             b = CoherentState(fs, nS, CoordType.spherical);
             Phi = StringState(a, b);
-            tc.verifyEqual(a.v, [1; 0; 0], 'AbsTol', tc.abs_tol)
-            tc.verifyEqual(b.v, [0; 0; 1], 'AbsTol', tc.abs_tol)
-            tc.verifyEqual(Phi.getM, 1/sqrt(2) * [0 0 1; 0 0 0; 1 0 0], 'AbsTol', tc.abs_tol)
+            tc.verifyEqual(a.v, [1; 0; 0], 'AbsTol', tc.abstol)
+            tc.verifyEqual(b.v, [0; 0; 1], 'AbsTol', tc.abstol)
+            tc.verifyEqual(Phi.getM, 1/sqrt(2) * [0 0 1; 0 0 0; 1 0 0], 'AbsTol', tc.abstol)
         end
         
         function testp2M(tc)

@@ -1,4 +1,4 @@
-classdef FuzzySphere
+classdef FuzzySphere < handle
     % FUZZYSPHERE The fuzzy sphere of radius R with N quantum cells
     % represented by three NxN angular momentum matrices in the |jm> basis 
     % where Jz is diagonal.

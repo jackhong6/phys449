@@ -17,9 +17,9 @@ classdef StringState
         %    | x5 | <--> | x4 - ix5  , sqrt(2) x2, x6 + ix7   |
         %    | x6 |      |                                    |
         %    | x7 |      | x8 - ix9  , x6 - ix7  , sqrt(2) x3 |
-        %    | x8 |       ?                                  ?
+        %    | x8 |       -                                  -
         %    | x9 |
-        %     ?  ?
+        %     -  -
         p
     end
     

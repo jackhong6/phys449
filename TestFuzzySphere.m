@@ -2,7 +2,7 @@ classdef TestFuzzySphere < matlab.unittest.TestCase
     %% Unit tests for FuzzySphere class.
     
     properties
-        abs_tol = 1e-12;  % tolerance for checking floating point equality
+        abstol = 1e-12;  % tolerance for checking floating point equality
     end
     
     %% Test Methods Block
@@ -27,7 +27,7 @@ classdef TestFuzzySphere < matlab.unittest.TestCase
             for R = 1:3
                 fs = FuzzySphere(R, 3);
                 r_squared = fs.x^2 + fs.y^2 + fs.z^2;
-                tc.verifyEqual(r_squared, R^2 * eye(3), 'AbsTol', tc.abs_tol)
+                tc.verifyEqual(r_squared, R^2 * eye(3), 'AbsTol', tc.abstol)
                 tc.verifyEqual(fs.R, R)
             end
         end
@@ -37,21 +37,21 @@ classdef TestFuzzySphere < matlab.unittest.TestCase
                 for R = 1:3
                     a = 2 * R / sqrt(N^2 - 1);
                     fs = FuzzySphere(R, N);
-                    tc.verifyEqual(commutator(fs.x, fs.y), 1i*fs.z*a, 'AbsTol', tc.abs_tol)
-                    tc.verifyEqual(commutator(fs.y, fs.z), 1i*fs.x*a, 'AbsTol', tc.abs_tol)
-                    tc.verifyEqual(commutator(fs.z, fs.x), 1i*fs.y*a, 'AbsTol', tc.abs_tol)
+                    tc.verifyEqual(commutator(fs.x, fs.y), 1i*fs.z*a, 'AbsTol', tc.abstol)
+                    tc.verifyEqual(commutator(fs.y, fs.z), 1i*fs.x*a, 'AbsTol', tc.abstol)
+                    tc.verifyEqual(commutator(fs.z, fs.x), 1i*fs.y*a, 'AbsTol', tc.abstol)
                 end
             end
         end
         
         function testLargeNCommutators(tc)
-            R = 2;
+            R = 1;
             N = 300;
             fs = FuzzySphere(R, N);
             a = 2 * R / sqrt(N^2 - 1);
-            tc.verifyEqual(commutator(fs.x, fs.y), 1i*fs.z*a, 'AbsTol', tc.abs_tol)
-            tc.verifyEqual(commutator(fs.y, fs.z), 1i*fs.x*a, 'AbsTol', tc.abs_tol)
-            tc.verifyEqual(commutator(fs.z, fs.x), 1i*fs.y*a, 'AbsTol', tc.abs_tol)
+            tc.verifyEqual(commutator(fs.x, fs.y), 1i*fs.z*a, 'AbsTol', tc.abstol)
+            tc.verifyEqual(commutator(fs.y, fs.z), 1i*fs.x*a, 'AbsTol', tc.abstol)
+            tc.verifyEqual(commutator(fs.z, fs.x), 1i*fs.y*a, 'AbsTol', tc.abstol)
         end
         
         function testIndexing(tc)
