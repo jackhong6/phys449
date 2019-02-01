@@ -21,9 +21,7 @@ classdef StringState
         %    | x9 |
         %     -  -
         % fs is the FuzzySphere that the string state lives on
-        % la is the Laplacian on the sphere
-        % k is the p vector in the basis of the eigenvectors of K
-        p, fs, la, k
+        p, fs
     end
     
     methods
@@ -48,9 +46,6 @@ classdef StringState
             else
                 return
             end
-            
-            obj.la = Laplacian(obj.fs);
-            obj.k = obj.la.p2kBasis(obj.p);
         end
         
         function M = getM(self)
@@ -70,34 +65,29 @@ classdef StringState
             M = diag(sqrt(2) * p(1:N));
             start_ind = N + 1;
             
-            for k = 1:N-1
-                diag_length = N - k;
+            for m = 1:N-1
+                diag_length = N - m;
                 end_ind = start_ind + 2*diag_length - 1;
                 real_ind = start_ind : 2 : end_ind - 1;
                 imag_ind = start_ind + 1 : 2 : end_ind;
                 
-                M(diag(true(diag_length, 1),  k)) = ...
+                M(diag(true(diag_length, 1),  m)) = ...
                     p(real_ind) + 1i*p(imag_ind);
 
-                M(diag(true(diag_length, 1), -k)) = ...
+                M(diag(true(diag_length, 1), -m)) = ...
                     p(real_ind) - 1i*p(imag_ind);
                 
                 start_ind = end_ind + 1;
             end
-            
         end
         
         function p = M2p(M)
             % M2P Return the vector parametrization of the matrix M.
-            assert(ishermitian(M));
+            %assert(ishermitian(M));
             N = size(M, 1);
             
-            if isnumeric(M)
-                p = zeros(N^2, 1);
-            else
-                p = sym(zeros(N^2, 1));
-            end
-                
+            p = zeros(N^2, 1);
+                            
             p(1:N) = diag(M) / sqrt(2);
             start_ind = N + 1;
             
