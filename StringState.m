@@ -20,33 +20,46 @@ classdef StringState
         %    | x8 |       -                                  -
         %    | x9 |
         %     -  -
-        p
+        % fs is the FuzzySphere that the string state lives on
+        % la is the Laplacian on the sphere
+        % k is the p vector in the basis of the eigenvectors of K
+        p, fs, la, k
     end
     
     methods
         function obj = StringState(varargin)
             % CONSTRUCTOR Create an instance of this class using either two
             % CoherentStates or a p vector parametrization.
-            if nargin == 2
-                % If there are two arguments, then assume they are of type 
-                % CoherentState 
+            if nargin == 3
+                % If there are 3 arguments, then assume the first 2 are
+                % of type CoherentState .
                 M = (varargin{1}.v * varargin{2}.v') ...
                     + (varargin{2}.v * varargin{1}.v');
+                obj.fs = varargin{3};
                 
                 % Normalize the string state so that Tr(A' * A) = 1
                 A = trace(M' * M);
                 M = M / sqrt(A);
                 
                 obj.p = obj.M2p(M);        
-            elseif nargin == 1
+            elseif nargin == 2
                 obj.p = varargin{1};
+                obj.fs = varargin{2};
             else
                 return
             end
+            
+            obj.la = Laplacian(obj.fs);
+            obj.k = obj.la.p2kBasis(obj.p);
         end
         
         function M = getM(self)
             M = self.p2M(self.p);
+        end
+        
+        function c_t = ct(self, t, m, c0, dcdt0)
+            w = sqrt(diag(self.la.getFullD) + m^2);
+            c_t = (c0.*cos(w*t) + (dcdt0 ./ w) .* sin(w*t));
         end
     end
     
@@ -76,7 +89,7 @@ classdef StringState
         
         function p = M2p(M)
             % M2P Return the vector parametrization of the matrix M.
-            %assert(ishermitian(M));
+            assert(ishermitian(M));
             N = size(M, 1);
             
             if isnumeric(M)
@@ -88,14 +101,14 @@ classdef StringState
             p(1:N) = diag(M) / sqrt(2);
             start_ind = N + 1;
             
-            for k = 1:N-1
-                diag_length = N - k;
+            for m = 1:N-1
+                diag_length = N - m;
                 end_ind = start_ind + 2*diag_length - 1;
                 
                 real_ind = start_ind : 2 : end_ind - 1;
                 imag_ind = start_ind + 1 : 2 : end_ind;
                 
-                kth_diag = M(diag(true(diag_length, 1),  k));
+                kth_diag = M(diag(true(diag_length, 1),  m));
                 p(real_ind) = real(kth_diag);
                 p(imag_ind) = imag(kth_diag);
                 

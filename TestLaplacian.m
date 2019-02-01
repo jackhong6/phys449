@@ -27,10 +27,22 @@ classdef TestLaplacian < matlab.unittest.TestCase
             fs = FuzzySphere(1, 7);
             la = Laplacian(fs);
             p = 1:49;
-            Phi = StringState(p);
+            Phi = StringState(p, fs);
             p1 = -StringState.M2p(Laplacian.do(fs, Phi.getM));
             p2 = la.Ktimes(p);
             tc.verifyEqual(p1, p2, 'AbsTol', tc.abstol);
+        end
+        
+        function testChangeBasis(tc)
+            fs = FuzzySphere(1, 3);
+            la = Laplacian(fs);
+            p = 1:9;
+            k1 = la.p2kBasis(p);
+            k2 = la.getFullV' * p(:);
+            tc.verifyEqual(k1, k2, 'AbsTol', tc.abstol);
+            
+            p1 = la.k2pBasis(k1);
+            tc.verifyEqual(p1', 1:9, 'Abstol', tc.abstol);
         end
     end
 end

@@ -15,7 +15,7 @@ classdef TestStringState < matlab.unittest.TestCase
 
             a = CoherentState(fs, nN, CoordType.spherical);
             b = CoherentState(fs, nS, CoordType.spherical);
-            Phi = StringState(a, b);
+            Phi = StringState(a, b, fs);
             tc.verifyEqual(a.v, [1; 0; 0], 'AbsTol', tc.abstol)
             tc.verifyEqual(b.v, [0; 0; 1], 'AbsTol', tc.abstol)
             tc.verifyEqual(Phi.getM, 1/sqrt(2) * [0 0 1; 0 0 0; 1 0 0], 'AbsTol', tc.abstol)

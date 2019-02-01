@@ -12,6 +12,8 @@ classdef CoherentState
     methods
         function obj = CoherentState(fs, n, coordType)
             % CONSTRUCTOR
+            % If coordType==CoordType.cartesian, n=[x, y, z]
+            % If coordType==CoordType.spherical, n=[azimuth, elevation, r]
             if nargin > 0
                 N = size(fs.x, 1);
                 obj.n = n;
