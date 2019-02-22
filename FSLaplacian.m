@@ -122,60 +122,6 @@ classdef FSLaplacian < handle
         function D = getFullD(self)
             D = blkdiag(self.D{:});
         end
-       
-% ==== Faster code that is still pretty slow. Calculates every element. ===      
-%        function obj = Laplacian(fs)
-%             %FSLAPLACIAN Construct an instance of this class
-%             %   fs is an instance of FuzzySphere
-%             %   Initialize K and find V and D
-%             obj.R = fs.R;
-%             N = size(fs.x, 1);
-% 
-%             K = zeros(N^2, N^2);
-%             
-%             vr = zeros(N^2, 1);
-%             vc = zeros(N^2, 1);
-%             
-%             for r = 1:length(vr)
-%                 vr(r) = 1;
-%                 for c = 1:length(vc)
-%                     vc(c) = 1;
-%                     M = StringState.p2M(vc);
-%                     L = -Laplacian.do(fs, M);
-%                     p = StringState.M2p(L);
-%                     K(r, c) = vr' * p;
-%                     vc(c) = 0;
-%                 end
-%                 vr(r) = 0;
-%             end
-%             
-%             obj.K = sparse(K);
-%        end
-% =========================================================================
-       
-% ============= Old code using symbolic programming. Very Slow. ===========
-%         function obj = Laplacian(fs)
-%             %FSLAPLACIAN Construct an instance of this class
-%             %   fs is an instance of FuzzySphere
-%             %   Initialize K and find V and D
-%             obj.R = fs.R;
-%             N = size(fs.x, 1);
-%             x = sym('x', [N^2, 1]);
-%             M = StringState.p2M(x);
-%             L = simplify(-Laplacian.do(fs, M));
-%             p = StringState.M2p(L);
-%             obj.K = zeros(N^2, N^2);
-%             
-%             v = zeros(N^2, 1);
-%             for r = 1:length(p)
-%                 for c = 1:N^2
-%                     v(c) = 1;
-%                     obj.K(r, c) = subs(p(r), x, v);
-%                     v(c) = 0;
-%                 end
-%             end
-%         end
-% =========================================================================
     end
         
     methods (Static)
