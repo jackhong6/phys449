@@ -229,7 +229,6 @@ classdef FSLaplacian < handle
                 offset = offset + blk_size;
             end
         end
-        
     end
 end
 
