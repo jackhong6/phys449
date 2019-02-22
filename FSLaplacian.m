@@ -1,5 +1,5 @@
-classdef Laplacian < handle
-    %LAPLACIAN Laplacian on a fuzzy sphere: [Ji, [Ji, Phi]]
+classdef FSLaplacian < handle
+    %FSLAPLACIAN Laplacian on a fuzzy sphere: [Li, [Li, Phi]]
     %   Contains the N^2 x N^2 matrix representing the action of minus the
     %   laplacian on the parametrization vector from the StringState class,
     %   as well as the eigenvalues and eigenvectors.
@@ -20,7 +20,7 @@ classdef Laplacian < handle
     end
     
     methods
-        function obj = Laplacian(fs)
+        function obj = FSLaplacian(fs)
             %LAPLACIAN Construct an instance of this class
             %   fs is an instance of FuzzySphere
             %   Initialize K and find V and D. Use bisymmetric property of K.
@@ -80,7 +80,6 @@ classdef Laplacian < handle
                [obj.V{blk}, obj.D{blk}] = eigs(obj.K{blk}, blk_size);
                offset = offset + blk_size;
             end
-            obj.D
         end
         
         function Kij = calculateKij(self, ii, jj, N)
@@ -89,7 +88,7 @@ classdef Laplacian < handle
             v = zeros(N^2, 1);
             v(jj) = 1;
             M = StringState.p2M(v);
-            M = -Laplacian.do(self.fs, M);
+            M = -FSLaplacian.do(self.fs, M);
             p = StringState.M2p(M);
             Kij = p(ii);
         end
@@ -112,44 +111,6 @@ classdef Laplacian < handle
             end
         end
         
-        function k = p2kBasis(self, p)
-            % Change the basis representation of the vector p;
-            % p is in the Lz basis while k is in the basis of the
-            % eigenvectors of K.
-            N = size(self.fs.x, 1);
-            assert(isvector(p) && length(p) == N^2)
-            p = p(:);
-            k = zeros(N^2, 1);
-            k(1:N) = self.V{1}' * p(1:N);
-            
-            offset = N;
-            for blk = 2:N
-                blk_size =  2 * (N - blk + 1);
-                k(offset+1 : offset+blk_size) = ...
-                    self.V{blk}' * p(offset+1 : offset+blk_size);
-                offset = offset + blk_size;
-            end
-        end
-        
-        function p = k2pBasis(self, k)
-            % Change the basis representation of the vector k;
-            % p is in the Lz basis while k is in the basis of the
-            % eigenvectors of K.
-            N = size(self.fs.x, 1);
-            assert(isvector(k) && length(k) == N^2)
-            k = k(:);
-            p = zeros(N^2, 1);
-            p(1:N) = self.V{1} * k(1:N);
-            
-            offset = N;
-            for blk = 2:N
-                blk_size =  2 * (N - blk + 1);
-                p(offset+1 : offset+blk_size) = ...
-                    self.V{blk} * k(offset+1 : offset+blk_size);
-                offset = offset + blk_size;
-            end
-        end
-        
         function K = getFullK(self)
             K = blkdiag(self.K{:});
         end
@@ -164,7 +125,7 @@ classdef Laplacian < handle
        
 % ==== Faster code that is still pretty slow. Calculates every element. ===      
 %        function obj = Laplacian(fs)
-%             %LAPLACIAN Construct an instance of this class
+%             %FSLAPLACIAN Construct an instance of this class
 %             %   fs is an instance of FuzzySphere
 %             %   Initialize K and find V and D
 %             obj.R = fs.R;
@@ -194,7 +155,7 @@ classdef Laplacian < handle
        
 % ============= Old code using symbolic programming. Very Slow. ===========
 %         function obj = Laplacian(fs)
-%             %LAPLACIAN Construct an instance of this class
+%             %FSLAPLACIAN Construct an instance of this class
 %             %   fs is an instance of FuzzySphere
 %             %   Initialize K and find V and D
 %             obj.R = fs.R;
@@ -229,6 +190,46 @@ classdef Laplacian < handle
             + commutator(fs.y, commutator(fs.y, Phi))...
             + commutator(fs.z, commutator(fs.z, Phi)));
         end
+               
+        function k = p2kBasis(la, p)
+            % Change the basis representation of the vector p;
+            % la is a Laplacian object.
+            % p is in the Lz basis while k is in the basis of the
+            % eigenvectors of K.
+            N = size(la.fs.x, 1);
+            assert(isvector(p) && length(p) == N^2);
+            p = p(:);
+            k = zeros(N^2, 1);
+            k(1:N) = la.V{1}' * p(1:N);
+            
+            offset = N;
+            for blk = 2:N
+                blk_size =  2 * (N - blk + 1);
+                k(offset+1 : offset+blk_size) = ...
+                    la.V{blk}' * p(offset+1 : offset+blk_size);
+                offset = offset + blk_size;
+            end
+        end
+        
+        function p = k2pBasis(la, k)
+            % Change the basis representation of the vector k;
+            % p is in the Lz basis while k is in the basis of the
+            % eigenvectors of K.
+            N = size(la.fs.x, 1);
+            assert(isvector(k) && length(k) == N^2);
+            k = k(:);
+            p = zeros(N^2, 1);
+            p(1:N) = la.V{1} * k(1:N);
+            
+            offset = N;
+            for blk = 2:N
+                blk_size =  2 * (N - blk + 1);
+                p(offset+1 : offset+blk_size) = ...
+                    la.V{blk} * k(offset+1 : offset+blk_size);
+                offset = offset + blk_size;
+            end
+        end
+        
     end
 end
 

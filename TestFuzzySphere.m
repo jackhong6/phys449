@@ -85,5 +85,15 @@ classdef TestFuzzySphere < matlab.unittest.TestCase
             
             tc.verifyEqual(fs.dot(n, CoordType.spherical), (1/2)*[c a-1i*b; a+1i*b -c])
         end
+        
+        function testConstructorWithLaplacian(tc)
+            fs = FuzzySphere(1, 3);
+            tc.verifyEmpty(fs.la)
+            fs = FuzzySphere(1, 3, true);
+            la = FSLaplacian(fs);
+            tc.verifyEqual(fs.la, la);
+            fs = FuzzySphere(1, 3, false);
+            tc.verifyEmpty(fs.la)
+        end
     end
 end

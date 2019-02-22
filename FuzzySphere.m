@@ -1,11 +1,11 @@
 classdef FuzzySphere < handle
     % FUZZYSPHERE The fuzzy sphere of radius R with N quantum cells
     % represented by three NxN angular momentum matrices in the |jm> basis 
-    % where Jz is diagonal.
+    % where Lz is diagonal.
     %
-    %    For example, to create the fuzzy sphere of radius 5 with 3 cells:
+    %    For example, to create the fuzzy sphere of radius 2 with 3 cells:
     %
-    %        fs = FuzzySphere(5, 3);
+    %        fs = FuzzySphere(2, 3);
     %
     %    To access the three matrices, you can use
     %
@@ -16,15 +16,20 @@ classdef FuzzySphere < handle
     %        fs(1), fs(2), fs(3)
     
     properties
-        % x, y, z are NxN matrices. 
+        % x, y, z are NxN matrices.
         % R is the radius of the sphere.
-        x, y, z, R
+        % la is the FSLaplacian on the sphere.
+        x, y, z, R, la
     end
     
     methods
-        function fs = FuzzySphere(R, N)
+        function fs = FuzzySphere(R, N, la)
             % CONSTRUCTOR Initialize the 3 NxN matrices
             % in the basis where fs.z is diagonal.
+            % la is optional and can be a boolean or of type FSLaplacian
+            % if la is an FSLaplacian then simply assign it to the la field.
+            % if la is true then calculate the FSLaplacian for the sphere,
+            % otherwise do not assign the la field.
             if nargin > 0
                 j = (N - 1) / 2;
                 m = j : -1 : -j;
@@ -37,13 +42,21 @@ classdef FuzzySphere < handle
                 cm = sqrt((j + m(1:end-1)) .* (j - m(1:end-1) + 1));
                 Jminus = diag(cm, -1);
 
-                fs.R = R;
                 fs.x = A * (Jplus + Jminus) / 2;
                 fs.y = A * (Jplus - Jminus) / 2i;
                 fs.z = A * diag(m);
+                fs.R = R;
+                
+                if nargin == 3 
+                    if isa(la, 'FSLaplacian')
+                        fs.la = la;
+                    elseif la
+                        fs.la = FSLaplacian(fs);
+                    end
+                end
             end
         end
-        
+                
         function sref = subsref(obj, s)
             % Overload indexing so that J(1) == J.x, J(2) == J.y and
             % J(3) == J.z.

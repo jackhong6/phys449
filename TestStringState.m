@@ -7,6 +7,20 @@ classdef TestStringState < matlab.unittest.TestCase
     
     %% Test Methods Block
     methods (Test)
+        function testConstructors(tc)
+            fs = FuzzySphere(1, 3, false);
+
+            s1 = StringState(pi/4, fs);
+           
+            n1 = [0, pi/4, 1];
+            n2 = [0, -pi/4, 1];       
+            a = CoherentState(fs, n1, CoordType.spherical);
+            b = CoherentState(fs, n2, CoordType.spherical);
+            s2 = StringState(a, b, fs);
+            
+            tc.verifyEqual(s1, s2)
+        end
+
         function testNorthAndSouthPoleStates(tc)
             fs = FuzzySphere(sqrt(3)/2, 3);
             
@@ -16,11 +30,9 @@ classdef TestStringState < matlab.unittest.TestCase
             a = CoherentState(fs, nN, CoordType.spherical);
             b = CoherentState(fs, nS, CoordType.spherical);
             Phi = StringState(a, b, fs);
-            tc.verifyEqual(a.v, [1; 0; 0], 'AbsTol', tc.abstol)
-            tc.verifyEqual(b.v, [0; 0; 1], 'AbsTol', tc.abstol)
             tc.verifyEqual(Phi.getM, 1/sqrt(2) * [0 0 1; 0 0 0; 1 0 0], 'AbsTol', tc.abstol)
         end
-        
+                
         function testp2M(tc)
             p = 1:4;
             M = StringState.p2M(p);
@@ -32,6 +44,23 @@ classdef TestStringState < matlab.unittest.TestCase
             tc.verifyEqual(M, [sqrt(2) 4+5i 8+9i; 
                                4-5i 2*sqrt(2) 6+7i; 
                                8-9i 6-7i 3*sqrt(2)])
+        end
+        
+        function testgetM(tc)
+            fs = FuzzySphere(1, 3, false);
+            p = 1:9;
+            M = StringState.p2M(p);
+            Phi = StringState(p, fs);
+            tc.verifyEqual(Phi.getM, M, 'AbsTol', tc.abstol)
+        end
+        
+        function testgetk(tc)
+            fs = FuzzySphere(1, 3, true);
+            p = 1:9;
+            M = StringState.p2M(p);
+            Phi = StringState(p, fs);
+            k = Phi.getk;
+            tc.verifyEqual(k, FSLaplacian.p2kBasis(fs.la, p))
         end
         
         function testp2MRandom(tc)

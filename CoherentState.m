@@ -1,10 +1,10 @@
 classdef CoherentState
-    % COHERENTSTATE Nx1 vector representation of a coherent state in Jz basis.
+    % COHERENTSTATE Nx1 vector representation of a coherent state in Lz basis.
     %   A coherent state is the eigenvector with the largest eigenvalue
     %   of the angular momentum operator in the n direction.
     
     properties
-        % v is the Nx1 eigenvector of Ln with eigenvalue j, 
+        % v is the Nx1 eigenvector of Ln with eigenvalue j in the Lz basis, 
         % where Ln is the angular momentum operator in the n direction.
         v, n, coordType
     end

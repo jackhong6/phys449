@@ -21,45 +21,57 @@ classdef StringState
         %    | x9 |
         %     -  -
         % fs is the FuzzySphere that the string state lives on
-        % la is the Laplacian on the sphere
-        % k is the p vector in the basis of the eigenvectors of K
-        p, fs, la, k
+        % m is the mass of the StringState
+        p, fs, m
     end
     
     methods
         function obj = StringState(varargin)
             % CONSTRUCTOR Create an instance of this class using either two
-            % CoherentStates or a p vector parametrization.
-            if nargin == 3
+            % CoherentStates, a p vector parametrization, or an opening angle.
+            if nargin == 2
+                obj.fs = varargin{2};
+                if isscalar(varargin{1})
+                    % Interpret as an opening angle in radians
+                    n1 = [0, varargin{1}, 1];  % [azimuth, elevation, radius]
+                    n2 = [0, -varargin{1}, 1];
+                    cs1 = CoherentState(obj.fs, n1, CoordType.spherical);
+                    cs2 = CoherentState(obj.fs, n2, CoordType.spherical);
+                    obj = StringState(cs1, cs2, obj.fs);
+                else
+                    % Interpret as p vector 
+                    obj.p = varargin{1};
+                end
+            elseif nargin == 3
                 % If there are 3 arguments, then assume the first 2 are
-                % of type CoherentState .
-                M = (varargin{1}.v * varargin{2}.v') ...
-                    + (varargin{2}.v * varargin{1}.v');
+                % of type CoherentState.
                 obj.fs = varargin{3};
+
+                M = (varargin{1}.v(:) * varargin{2}.v(:)') ...
+                    + (varargin{2}.v(:) * varargin{1}.v(:)');
                 
                 % Normalize the string state so that Tr(A' * A) = 1
                 A = trace(M' * M);
                 M = M / sqrt(A);
                 
                 obj.p = obj.M2p(M);        
-            elseif nargin == 2
-                obj.p = varargin{1};
-                obj.fs = varargin{2};
             else
-                return
+                error('Inputs: ([CoherentStates, parametrization vector, opening angle]; FuzzySphere)')
             end
-            
-            obj.la = Laplacian(obj.fs);
-            obj.k = obj.la.p2kBasis(obj.p);
+            obj.m = 1;
         end
         
         function M = getM(self)
             M = self.p2M(self.p);
         end
         
-        function c_t = ct(self, t, m, c0, dcdt0)
-            w = sqrt(diag(self.la.getFullD) + m^2);
-            c_t = (c0.*cos(w*t) + (dcdt0 ./ w) .* sin(w*t));
+        function k = getk(self)
+            k = FSLaplacian.p2kBasis(self.fs.la, self.p);
+        end
+        
+        function k_t = kt(self, t, k0, dkdt0)
+            w = sqrt(diag(self.fs.la.getFullD) + self.m^2);
+            k_t = k0.*cos(w*t) + (dkdt0 ./ w) .* sin(w*t);
         end
     end
     
@@ -70,34 +82,29 @@ classdef StringState
             M = diag(sqrt(2) * p(1:N));
             start_ind = N + 1;
             
-            for k = 1:N-1
-                diag_length = N - k;
+            for m = 1:N-1
+                diag_length = N - m;
                 end_ind = start_ind + 2*diag_length - 1;
                 real_ind = start_ind : 2 : end_ind - 1;
                 imag_ind = start_ind + 1 : 2 : end_ind;
                 
-                M(diag(true(diag_length, 1),  k)) = ...
+                M(diag(true(diag_length, 1),  m)) = ...
                     p(real_ind) + 1i*p(imag_ind);
 
-                M(diag(true(diag_length, 1), -k)) = ...
+                M(diag(true(diag_length, 1), -m)) = ...
                     p(real_ind) - 1i*p(imag_ind);
                 
                 start_ind = end_ind + 1;
             end
-            
         end
         
         function p = M2p(M)
             % M2P Return the vector parametrization of the matrix M.
-            assert(ishermitian(M));
+            % assert(ishermitian(M));
             N = size(M, 1);
             
-            if isnumeric(M)
-                p = zeros(N^2, 1);
-            else
-                p = sym(zeros(N^2, 1));
-            end
-                
+            p = zeros(N^2, 1);
+                            
             p(1:N) = diag(M) / sqrt(2);
             start_ind = N + 1;
             
