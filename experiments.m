@@ -1,5 +1,5 @@
 function experiments(n)
-
+% Some scratch code to experiment with.
 switch(n)
     case(1)
         load FuzzySpheres.mat fs50;
@@ -159,7 +159,7 @@ switch(n)
         end
         
         hold on
-        plot(t, overlaps1);
+        %plot(t, overlaps1);
         plot(t, overlaps2);
         title_txt = sprintf('Overlap for $N=%d$, $v=%.2f$, $\\theta = $ %.2f $\\pi$', ... 
                 N, v0, theta/pi);
@@ -168,6 +168,223 @@ switch(n)
         ylabel('$\langle k(t) | ik(0) \rangle$', 'interpreter', 'latex')
         
     case (5)
+        % Check if other antipodal states give the same overlap  
+        N = 50;
+        load FuzzySpheres.mat fs50
+        fs = fs50;
+        v0 = 0;
         
-end
+        hold on
+        % x axis antipodal state
+        n1 = [1, 0, 0];
+        n2 = [-1, 0, 0];
+        cs1 = CoherentState(fs, n1, CoordType.cartesian);
+        cs2 = CoherentState(fs, n2, CoordType.cartesian);
+        ss = StringState(cs1, cs2, fs);
+        ss.k0 = ss.getk;
+        ss.dkdt0 = ss.getdkdt(v0, [1, 0, 0], CoordType.spherical);
+        t = linspace(0, 1, 500);
+        overlaps = zeros(length(t), 1);
+        for ii = 1:length(t)
+            kti = ss.kt(t(ii));
+            overlaps(ii) = kti(:)' * ss.k0;
+        end
+        
+        overlaps = overlaps ./ overlaps(1);
+        subplot(2, 2, 1)
+        plot(t, overlaps);
+        title_txt = sprintf('Antipodal states (x axis, $N=%d$, $v=%.2f$)', ...
+            N, v0);
+        title(title_txt,'interpreter', 'latex')
+        xlabel('Time', 'interpreter', 'latex')
+        ylabel('$\langle k(t) | k(0) \rangle$', 'interpreter', 'latex')
+        
+        % y axis antipodal state
+        n1 = [0, 1, 0];
+        n2 = [0, -1, 0];
+        cs1 = CoherentState(fs, n1, CoordType.cartesian);
+        cs2 = CoherentState(fs, n2, CoordType.cartesian);
+        ss = StringState(cs1, cs2, fs);
+        ss.k0 = ss.getk;
+        ss.dkdt0 = ss.getdkdt(v0, [1, 0, 0], CoordType.spherical);
+        t = linspace(0, 1, 500);
+        overlaps = zeros(length(t), 1);
+        for ii = 1:length(t)
+            kti = ss.kt(t(ii));
+            overlaps(ii) = kti(:)' * ss.k0;
+        end
+        
+        overlaps = overlaps ./ overlaps(1);
+        subplot(2, 2, 2)
+        plot(t, overlaps);
+        title_txt = sprintf('Antipodal states (y axis, $N=%d$, $v=%.2f$)', ...
+            N, v0);
+        title(title_txt,'interpreter', 'latex')
+        xlabel('Time', 'interpreter', 'latex')
+        ylabel('$\langle k(t) | k(0) \rangle$', 'interpreter', 'latex')
+        
+        % z axis antipodal state (North - South poles)
+        ss = StringState(pi/2, fs);
+        ss.k0 = ss.getk;
+        ss.dkdt0 = ss.getdkdt(v0, [1, 0, 0], CoordType.spherical);
+        t = linspace(0, 1, 500);
+        overlaps = zeros(length(t), 1);
+        for ii = 1:length(t)
+            kti = ss.kt(t(ii));
+            overlaps(ii) = kti(:)' * ss.k0;
+        end
+        
+        overlaps = overlaps ./ overlaps(1);
+        subplot(2, 2, 3)
+        plot(t, overlaps);
+        title_txt = sprintf('Antipodal states (z axis, $N=%d$, $v=%.2f$)', ...
+            N, v0);
+        title(title_txt,'interpreter', 'latex')
+        xlabel('Time', 'interpreter', 'latex')
+        ylabel('$\langle k(t) | k(0) \rangle$', 'interpreter', 'latex')
+                
+        % x axis antipodal state
+        n1 = [1, 1, 1];
+        n2 = [-1, -1, -1];
+        cs1 = CoherentState(fs, n1, CoordType.cartesian);
+        cs2 = CoherentState(fs, n2, CoordType.cartesian);
+        ss = StringState(cs1, cs2, fs);
+        ss.k0 = ss.getk;
+        ss.dkdt0 = ss.getdkdt(v0, [1, 0, 0], CoordType.spherical);
+        t = linspace(0, 1, 500);
+        overlaps = zeros(length(t), 1);
+        for ii = 1:length(t)
+            kti = ss.kt(t(ii));
+            overlaps(ii) = kti(:)' * ss.k0;
+        end
+        
+        overlaps = overlaps ./ overlaps(1);
+        subplot(2, 2, 4)
+        plot(t, overlaps);
+        title_txt = sprintf('Antipodal states (n=+/-[1,1,1], $N=%d$, $v=%.2f$)', ...
+            N, v0);
+        title(title_txt,'interpreter', 'latex')
+        xlabel('Time', 'interpreter', 'latex')
+        ylabel('$\langle k(t) | k(0) \rangle$', 'interpreter', 'latex')
+        
+    case (6)
+        N = 10;
+        load FuzzySpheres.mat fs10
+        fs = fs10;
+        v0 = 0;
+        
+        n_opening_angles = 100;
+        n_t = 100;
+        opening_angles = linspace(0, pi/2, n_opening_angles);
+        t = linspace(0, 5, n_t);
+        
+        w = sqrt(diag(fs.la.getFullD) + 1);
+        k0 = zeros(n_opening_angles, N^2);
+        dkdt0 = zeros(n_opening_angles, N^2);
+        for ii = 1:n_opening_angles
+            ss = StringState(opening_angles(ii), fs);
+            k0(ii, :) = ss.getk;
+            dkdt0(ii, :) = ss.getdkdt(v0, [1, 0, 0], CoordType.spherical);
+        end
+        
+        kti = zeros(n_opening_angles, N^2);
+        overlaps = zeros(n_opening_angles, n_t);
+        for ii = 1:n_t
+            kti(ii, :) = k0 * cos(w(:)*t(ii)) + dkdt0 * (sin(w(:)*t(ii)) ./ w(:));
+            overlaps(:, ii) = dot(kti, k0, 2);
+        end
+        
+        ax = gca;
+        pcolor(overlaps);
+        colorbar;
+        
+    case (7)
+        N = 10;
+        load FuzzySpheres.mat fs10
+        fs = fs10;
+        v0 = 0;
+        
+        n_opening_angles = 500;
+        n_t = 500;
+        tf = 30;
+        opening_angles = linspace(0, pi/2, n_opening_angles);
+        t = linspace(0, tf, n_t);
+        
+        w = sqrt(diag(fs.la.getFullD) + 1);
+        k0 = zeros(n_opening_angles, N^2);
+        dkdt0 = zeros(n_opening_angles, N^2);
+        for ii = 1:n_opening_angles
+            ss = StringState(opening_angles(ii), fs);
+            k0(ii, :) = ss.getk;
+            dkdt0(ii, :) = ss.getdkdt(0, [0, 0, 1], CoordType.cartesian);
+        end
+        
+        ss = StringState(pi/4, fs);
+        ss.k0 = ss.getk;
+        ss.dkdt0 = ss.getdkdt(v0, [1, 0, 0], CoordType.cartesian);
+        overlaps = zeros(n_opening_angles, n_t);
+        for ii = 1:n_t
+            kti = ss.kt(t(ii));
+            overlaps(:, ii) = k0 * kti(:);
+        end
+        
+        overlaps = overlaps ./ max(max(overlaps));
+        overlaps = abs(overlaps);
+        %overlaps = overlaps.^2;
+        ax = gca;
+        pcolor(overlaps);
+        shading flat
+        colorbar;
+        xticks(linspace(1, n_t, 5))
+        xticklabels({'0', sprintf('%.1f', tf/4), sprintf('%.1f', tf/2), sprintf('%.1f', 3*tf/4), sprintf('%.1f', tf)})
+        yticks([1, floor(n_opening_angles/2), n_opening_angles])
+        yticklabels({'0', '45', '90'})
+        xlabel('Time', 'FontSize', 16);
+        ylabel('Opening angle (degrees)', 'FontSize', 16);
+        title('|Overlap| of 45 deg string state with states of different opening angles (N=10, v=0)')
+        
+    case (8)
+        % Trying to find where the string disappears to
+        N = 10;
+        load FuzzySpheres.mat fs10
+        fs = fs10;
+        v0 = 0;
+        
+        n_opening_angles = 50;
+        n_azimuth_angles = 200;
+        t = 0;
+        opening_angles = linspace(0, pi/2, n_opening_angles);
+        azimuth_angles = linspace(0, 2*pi, n_azimuth_angles);
+        
+        w = sqrt(diag(fs.la.getFullD) + 1);
+        k0 = zeros(n_opening_angles, n_azimuth_angles, N^2);
+        for ii = 1:n_opening_angles
+            for jj = 1:n_azimuth_angles
+                ss = StringState(opening_angles(ii), azimuth_angles(jj), fs);
+                k0(ii, jj, :) = ss.calculate_k0;
+            end
+        end
+        
+        ss = StringState(pi/4, fs);
+        kt = ss.kt(t);
+        overlaps = zeros(n_opening_angles, n_azimuth_angles);
+        for ii = 1:n_opening_angles
+            for jj = 1:n_azimuth_angles
+                overlaps(ii, jj) = dot(squeeze(k0(ii, jj, :)), kt);
+            end
+        end
+      
+        overlaps = abs(overlaps);
+        overlaps = overlaps ./ max(max(overlaps));
+        ax = gca;
+        pcolor(overlaps);
+        shading flat
+        colorbar;
+        xticks(linspace(1, n_azimuth_angles, 5))
+        xticklabels({'0', '\pi/2', '\pi', '3\pi/2', '2 \pi'})
+        yticks([1, floor(n_opening_angles/2), n_opening_angles])
+        yticklabels({'0', '\pi/4', '\pi/2'})
+        xlabel('Azimuth angle', 'FontSize', 16);
+        ylabel('Opening angle', 'FontSize', 16);
+        title(sprintf('|Overlap| of 45 deg string state with states of different opening angles (N=10, v=0, t=%.1f)', t))
 end

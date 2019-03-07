@@ -10,7 +10,7 @@ classdef CoherentState
     end
     
     methods
-        function obj = CoherentState(fs, n, coordType)
+        function obj = CoherentState(n, fs, coordType)
             % CONSTRUCTOR
             % If coordType==CoordType.cartesian, n=[x, y, z]
             % If coordType==CoordType.spherical, n=[azimuth, elevation, r]
@@ -18,14 +18,15 @@ classdef CoherentState
                 N = size(fs.x, 1);
                 obj.n = n;
                 obj.coordType = coordType;
-                j = (N - 1) / 2;
-                eig_value = sqrt(j / (j + 1)) * fs.R;
 
-                tol = 1e-9;
                 Xn = fs.dot(n, coordType);
 
-                [V, D] = eigs(Xn, 2);
-                obj.v = V(:, abs(diag(D) - eig_value) < tol);
+                [V, ~] = eigs(Xn + fs.R*eye(N), 1);
+                %obj.v = V(:, abs(diag(D) - eig_value) < tol);
+                if sign(real(V(1))) == -1
+                    V = -V;
+                end
+                obj.v = V;
             end
         end
     end

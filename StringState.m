@@ -5,6 +5,13 @@ classdef StringState
     
     properties
         % p is the parametrization of the string state by a vector of length N^2.
+        % fs is the FuzzySphere that the string state lives on
+        % k0 is the parametrization vector p in the basis of the laplacian
+        %   K at time = 0
+        % dkdt0
+        % m is the mass of the StringState
+        % w is a vector of time evolution frequencies for the p vector
+        %   elements in the k basis.
         %
         % Example: for a 3x3 string state the parametrization is
         %
@@ -20,9 +27,7 @@ classdef StringState
         %    | x8 |       -                                  -
         %    | x9 |
         %     -  -
-        % fs is the FuzzySphere that the string state lives on
-        % m is the mass of the StringState
-        p, fs, m
+        p, fs, k0, dkdt0, m, w
     end
     
     methods
@@ -35,43 +40,81 @@ classdef StringState
                     % Interpret as an opening angle in radians
                     n1 = [0, varargin{1}, 1];  % [azimuth, elevation, radius]
                     n2 = [0, -varargin{1}, 1];
-                    cs1 = CoherentState(obj.fs, n1, CoordType.spherical);
-                    cs2 = CoherentState(obj.fs, n2, CoordType.spherical);
+                    cs1 = CoherentState(n1, obj.fs, CoordType.spherical);
+                    cs2 = CoherentState(n2, obj.fs, CoordType.spherical);
                     obj = StringState(cs1, cs2, obj.fs);
                 else
-                    % Interpret as p vector 
+                    % Interpret as p vector
                     obj.p = varargin{1};
                 end
+                
             elseif nargin == 3
-                % If there are 3 arguments, then assume the first 2 are
-                % of type CoherentState.
-                obj.fs = varargin{3};
-
-                M = (varargin{1}.v(:) * varargin{2}.v(:)') ...
-                    + (varargin{2}.v(:) * varargin{1}.v(:)');
+                 obj.fs = varargin{3};
+                if isa(varargin{1}, 'CoherentState')
+                    % Interpret as two CoherentStates
+                    M = (varargin{1}.v(:) * varargin{2}.v(:)') ...
+                        + (varargin{2}.v(:) * varargin{1}.v(:)');
+                    
+                    % Normalize the string state so that Tr(A' * A) = 1
+                    A = trace(M' * M);
+                    M = M / sqrt(A);
+                    obj.p = obj.M2p(M);
+                else
+                    % Interpret as (opening angle, azimuthal angle, etc.)
+                    n1 = [varargin{2}, varargin{1}, 1];  % [azimuth, elevation, radius]
+                    n2 = [varargin{2}, -varargin{1}, 1];
+                    cs1 = CoherentState(n1, obj.fs, CoordType.spherical);
+                    cs2 = CoherentState(n2, obj.fs, CoordType.spherical);
+                    obj = StringState(cs1, cs2, obj.fs);
+                end
                 
-                % Normalize the string state so that Tr(A' * A) = 1
-                A = trace(M' * M);
-                M = M / sqrt(A);
-                
-                obj.p = obj.M2p(M);        
             else
                 error('Inputs: ([CoherentStates, parametrization vector, opening angle]; FuzzySphere)')
             end
+            
             obj.m = 1;
+            
+            if ~isempty(obj.fs.la)
+                obj.w = obj.getw();
+                obj.k0 = obj.calculate_k0;
+                obj.dkdt0 = zeros(length(obj.p), 1);
+            end
+        end
+        
+        function overlap = overlap0(self, ss, t)
+            % Return the normalized overlap between itself (at t=0) and a
+            % StringState ss at time=t
+            kt = ss.kt(t);
+            overlap = 2*abs(kt(:)' * self.k0(:));
         end
         
         function M = getM(self)
             M = self.p2M(self.p);
         end
         
-        function k = getk(self)
-            k = FSLaplacian.p2kBasis(self.fs.la, self.p);
+        function w = getw(self)
+            w = sqrt(diag(self.fs.la.getFullD) + self.m^2);
         end
         
-        function k_t = kt(self, t, k0, dkdt0)
-            w = sqrt(diag(self.fs.la.getFullD) + self.m^2);
-            k_t = k0.*cos(w*t) + (dkdt0 ./ w) .* sin(w*t);
+        function k0 = calculate_k0(self)
+            k0 = FSLaplacian.p2kBasis(self.fs.la, self.p);
+        end
+        
+        function dkdt = calculate_dkdt0(self, v, n, coordType)
+            % Return a vector of velocities for the k vector given
+            % initial speed v and axis of rotation n.
+            % n is assumed to be a unit vector pointing in the direction
+            % of the axis of rotation. The direction of rotation is given
+            % by the right hand rule.
+            dMdt = 1i * v * commutator(self.fs.dot(n, coordType), self.getM);
+            dpdt = StringState.M2p(dMdt);
+            dkdt = FSLaplacian.p2kBasis(self.fs.la, dpdt);
+        end
+        
+        function k_t = kt(self, t)
+            % Return the time evolution k0 at time t. t must be a scalar.
+            % Must assign properties w, k0, and dkdt0 before using.
+            k_t = self.k0.*cos(self.w*t) + (self.dkdt0 ./ self.w) .* sin(self.w*t);
         end
     end
     
@@ -90,7 +133,7 @@ classdef StringState
                 
                 M(diag(true(diag_length, 1),  m)) = ...
                     p(real_ind) + 1i*p(imag_ind);
-
+                
                 M(diag(true(diag_length, 1), -m)) = ...
                     p(real_ind) - 1i*p(imag_ind);
                 
@@ -104,7 +147,7 @@ classdef StringState
             N = size(M, 1);
             
             p = zeros(N^2, 1);
-                            
+            
             p(1:N) = diag(M) / sqrt(2);
             start_ind = N + 1;
             

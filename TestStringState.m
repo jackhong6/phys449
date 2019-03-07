@@ -8,17 +8,28 @@ classdef TestStringState < matlab.unittest.TestCase
     %% Test Methods Block
     methods (Test)
         function testConstructors(tc)
-            fs = FuzzySphere(1, 3, false);
+            fs_wo_la = FuzzySphere(1, 3, false);
+            fs_w_la = FuzzySphere(1, 3, true);
 
-            s1 = StringState(pi/4, fs);
+            s1 = StringState(pi/4, fs_wo_la);
            
             n1 = [0, pi/4, 1];
             n2 = [0, -pi/4, 1];       
-            a = CoherentState(fs, n1, CoordType.spherical);
-            b = CoherentState(fs, n2, CoordType.spherical);
-            s2 = StringState(a, b, fs);
+            a = CoherentState(n1, fs_wo_la, CoordType.spherical);
+            b = CoherentState(n2, fs_wo_la, CoordType.spherical);
+            s2 = StringState(a, b, fs_w_la);
             
-            tc.verifyEqual(s1, s2)
+            w = sqrt(diag(fs_w_la.la.getFullD) + 1);
+            
+            tc.verifyEqual(s1.p, s2.p)
+            tc.verifyNotEmpty(s1.fs)
+            tc.verifyNotEmpty(s2.fs)
+            tc.verifyEqual(s1.m, 1)
+            tc.verifyEqual(s2.m, 1)
+            tc.verifyEmpty(s1.w)
+            tc.verifyEqual(s2.w, w)
+            tc.verifyEmpty(fs_wo_la.la)
+            tc.verifyNotEmpty(fs_w_la.la)
         end
 
         function testNorthAndSouthPoleStates(tc)
@@ -27,8 +38,8 @@ classdef TestStringState < matlab.unittest.TestCase
             nN = [0, pi/2, 1];   % North pole
             nS = [0, -pi/2, 1];  % South pole
 
-            a = CoherentState(fs, nN, CoordType.spherical);
-            b = CoherentState(fs, nS, CoordType.spherical);
+            a = CoherentState(nN, fs, CoordType.spherical);
+            b = CoherentState(nS, fs, CoordType.spherical);
             Phi = StringState(a, b, fs);
             tc.verifyEqual(Phi.getM, 1/sqrt(2) * [0 0 1; 0 0 0; 1 0 0], 'AbsTol', tc.abstol)
         end
@@ -54,13 +65,20 @@ classdef TestStringState < matlab.unittest.TestCase
             tc.verifyEqual(Phi.getM, M, 'AbsTol', tc.abstol)
         end
         
-        function testgetk(tc)
+        function testgetk0(tc)
             fs = FuzzySphere(1, 3, true);
             p = 1:9;
-            M = StringState.p2M(p);
             Phi = StringState(p, fs);
-            k = Phi.getk;
-            tc.verifyEqual(k, FSLaplacian.p2kBasis(fs.la, p))
+            tc.verifyEqual(Phi.k0, FSLaplacian.p2kBasis(fs.la, p))
+        end
+        
+        function testgetdkdt(tc)
+            fs = FuzzySphere(1, 3, true);
+            ss = StringState(pi/2, fs);
+            dMdt = 1i * commutator(fs.z, ss.getM);
+            dpdt = StringState.M2p(dMdt);
+            dkdt = FSLaplacian.p2kBasis(fs.la, dpdt);
+            tc.verifyEqual(ss.calculate_dkdt0(1, [0, 0, 1], CoordType.cartesian), dkdt)
         end
         
         function testp2MRandom(tc)
@@ -117,5 +135,14 @@ classdef TestStringState < matlab.unittest.TestCase
                 -imag(M(4,1))
                 ])
         end
+        
+%         function testAzimuthalAnglesForNorthSouthPoleStringState(tc)
+%             fs = FuzzySphere(1, 3, true);
+%             ss0 = StringState(pi/2, fs);
+%             for azimuth = linspace(0, 2*pi, 12)
+%                 ss = StringState(pi/2, azimuth, fs);
+%                 tc.verifyEqual(ss.overlap0(ss0, 0), 1, 'AbsTol', 1e-3)
+%             end
+%         end
     end
 end

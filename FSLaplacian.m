@@ -143,7 +143,7 @@ classdef FSLaplacian < handle
             % p is in the Lz basis while k is in the basis of the
             % eigenvectors of K.
             N = size(la.fs.x, 1);
-            assert(isvector(p) && length(p) == N^2);
+            %assert(isvector(p) && length(p) == N^2);
             p = p(:);
             k = zeros(N^2, 1);
             k(1:N) = la.V{1}' * p(1:N);
@@ -162,7 +162,7 @@ classdef FSLaplacian < handle
             % p is in the Lz basis while k is in the basis of the
             % eigenvectors of K.
             N = size(la.fs.x, 1);
-            assert(isvector(k) && length(k) == N^2);
+            %assert(isvector(k) && length(k) == N^2);
             k = k(:);
             p = zeros(N^2, 1);
             p(1:N) = la.V{1} * k(1:N);

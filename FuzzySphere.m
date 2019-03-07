@@ -111,9 +111,10 @@ classdef FuzzySphere < handle
                     if n(3) ~= 1
                         n(3) = 1;
                     end
+                                            
                     [n(1), n(2), n(3)] = sph2cart(n(1), n(2), n(3));
             end
-            
+                            
             Xn = n(1)*fs.x + n(2)*fs.y + n(3)*fs.z;
         end
     end
