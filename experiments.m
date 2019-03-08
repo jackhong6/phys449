@@ -273,22 +273,22 @@ switch(n)
         fs = fs10;
         v0 = 0;
         
-        n_opening_angles = 100;
+        n_theta = 100;
         n_t = 100;
-        opening_angles = linspace(0, pi/2, n_opening_angles);
+        thetas = linspace(0, pi/2, n_theta);
         t = linspace(0, 5, n_t);
         
         w = sqrt(diag(fs.la.getFullD) + 1);
-        k0 = zeros(n_opening_angles, N^2);
-        dkdt0 = zeros(n_opening_angles, N^2);
-        for ii = 1:n_opening_angles
-            ss = StringState(opening_angles(ii), fs);
+        k0 = zeros(n_theta, N^2);
+        dkdt0 = zeros(n_theta, N^2);
+        for ii = 1:n_theta
+            ss = StringState(thetas(ii), fs);
             k0(ii, :) = ss.getk;
             dkdt0(ii, :) = ss.getdkdt(v0, [1, 0, 0], CoordType.spherical);
         end
         
-        kti = zeros(n_opening_angles, N^2);
-        overlaps = zeros(n_opening_angles, n_t);
+        kti = zeros(n_theta, N^2);
+        overlaps = zeros(n_theta, n_t);
         for ii = 1:n_t
             kti(ii, :) = k0 * cos(w(:)*t(ii)) + dkdt0 * (sin(w(:)*t(ii)) ./ w(:));
             overlaps(:, ii) = dot(kti, k0, 2);
@@ -304,17 +304,17 @@ switch(n)
         fs = fs10;
         v0 = 0;
         
-        n_opening_angles = 500;
+        n_theta = 500;
         n_t = 500;
         tf = 30;
-        opening_angles = linspace(0, pi/2, n_opening_angles);
+        thetas = linspace(0, pi/2, n_theta);
         t = linspace(0, tf, n_t);
         
         w = sqrt(diag(fs.la.getFullD) + 1);
-        k0 = zeros(n_opening_angles, N^2);
-        dkdt0 = zeros(n_opening_angles, N^2);
-        for ii = 1:n_opening_angles
-            ss = StringState(opening_angles(ii), fs);
+        k0 = zeros(n_theta, N^2);
+        dkdt0 = zeros(n_theta, N^2);
+        for ii = 1:n_theta
+            ss = StringState(thetas(ii), fs);
             k0(ii, :) = ss.getk;
             dkdt0(ii, :) = ss.getdkdt(0, [0, 0, 1], CoordType.cartesian);
         end
@@ -322,7 +322,7 @@ switch(n)
         ss = StringState(pi/4, fs);
         ss.k0 = ss.getk;
         ss.dkdt0 = ss.getdkdt(v0, [1, 0, 0], CoordType.cartesian);
-        overlaps = zeros(n_opening_angles, n_t);
+        overlaps = zeros(n_theta, n_t);
         for ii = 1:n_t
             kti = ss.kt(t(ii));
             overlaps(:, ii) = k0 * kti(:);
@@ -337,7 +337,7 @@ switch(n)
         colorbar;
         xticks(linspace(1, n_t, 5))
         xticklabels({'0', sprintf('%.1f', tf/4), sprintf('%.1f', tf/2), sprintf('%.1f', 3*tf/4), sprintf('%.1f', tf)})
-        yticks([1, floor(n_opening_angles/2), n_opening_angles])
+        yticks([1, floor(n_theta/2), n_theta])
         yticklabels({'0', '45', '90'})
         xlabel('Time', 'FontSize', 16);
         ylabel('Opening angle (degrees)', 'FontSize', 16);
@@ -350,26 +350,26 @@ switch(n)
         fs = fs10;
         v0 = 0;
         
-        n_opening_angles = 50;
-        n_azimuth_angles = 200;
-        t = 0;
-        opening_angles = linspace(0, pi/2, n_opening_angles);
-        azimuth_angles = linspace(0, 2*pi, n_azimuth_angles);
+        n_theta = 50;
+        n_phi = 200;
+        t = 10;
+        thetas = linspace(0, pi/2, n_theta);
+        phis = linspace(0, 2*pi, n_phi);
         
         w = sqrt(diag(fs.la.getFullD) + 1);
-        k0 = zeros(n_opening_angles, n_azimuth_angles, N^2);
-        for ii = 1:n_opening_angles
-            for jj = 1:n_azimuth_angles
-                ss = StringState(opening_angles(ii), azimuth_angles(jj), fs);
+        k0 = zeros(n_theta, n_phi, N^2);
+        for ii = 1:n_theta
+            for jj = 1:n_phi
+                ss = StringState(thetas(ii), phis(jj), fs);
                 k0(ii, jj, :) = ss.calculate_k0;
             end
         end
         
         ss = StringState(pi/4, fs);
         kt = ss.kt(t);
-        overlaps = zeros(n_opening_angles, n_azimuth_angles);
-        for ii = 1:n_opening_angles
-            for jj = 1:n_azimuth_angles
+        overlaps = zeros(n_theta, n_phi);
+        for ii = 1:n_theta
+            for jj = 1:n_phi
                 overlaps(ii, jj) = dot(squeeze(k0(ii, jj, :)), kt);
             end
         end
@@ -380,11 +380,81 @@ switch(n)
         pcolor(overlaps);
         shading flat
         colorbar;
-        xticks(linspace(1, n_azimuth_angles, 5))
+        xticks(linspace(1, n_phi, 5))
         xticklabels({'0', '\pi/2', '\pi', '3\pi/2', '2 \pi'})
-        yticks([1, floor(n_opening_angles/2), n_opening_angles])
+        yticks([1, floor(n_theta/2), n_theta])
         yticklabels({'0', '\pi/4', '\pi/2'})
         xlabel('Azimuth angle', 'FontSize', 16);
         ylabel('Opening angle', 'FontSize', 16);
         title(sprintf('|Overlap| of 45 deg string state with states of different opening angles (N=10, v=0, t=%.1f)', t))
+        
+    case (9)
+        % Animation of evolution of 45 degree StringState
+        t = 0;
+        N = 10;
+        load FuzzySpheres.mat fs10
+        fs = fs10;
+        v0 = 0;
+        
+        n_theta = 20;
+        n_phi = 4 * n_theta;
+        %thetas = linspace(0, pi/2, n_theta);
+        
+        [lat, long] = meshgrid(linspace(-90, 90, 2*n_theta), linspace(-180, 180, n_phi));
+
+        k01 = zeros(n_theta, n_phi, N^2);
+        k02 = zeros(n_theta, n_phi, N^2);
+        for ii = 1:n_theta
+            theta = deg2rad(lat(1, ii));
+            for jj = 1:n_phi
+                phi = deg2rad(long(jj, 1));                
+                ss1 = StringState(theta, phi, fs);
+                ss2 = StringState(theta, phi, fs, 1);
+                k01(ii, jj, :) = ss1.calculate_k0;
+                k02(ii, jj, :) = ss2.calculate_k0;
+            end
+        end
+        
+        ss = StringState(pi/4, fs);
+        kt = ss.kt(t);
+        Z = zeros(size(lat));
+        for ii = 1:n_theta
+            for jj = 1:n_phi
+                overlap1 = 2*abs(dot(squeeze(k01(ii, jj, :)), kt));
+                overlap2 = 2*abs(dot(squeeze(k02(ii, jj, :)), kt));
+                overlap = overlap1^2 + overlap2^2;
+                Z(jj, ii) = overlap;
+                Z(jj, 2*n_theta - ii + 1) = overlap;
+            end
+        end
+%         for ii = 1:n_theta
+%             x = round((n_seg * (1 - cos(thetas(ii)))) / 2); 
+%             n = n_seg - 2*x;
+%             phis = linspace(0, 2*pi, n);
+% 
+%             for jj = 1:n
+%                 ss = StringState(thetas(ii), phis(jj), fs);
+%                 k0(ii, x+jj, :) = ss.calculate_k0;
+%             end
+%         end
+      
+        %overlaps = imag(overlaps);
+        %overlaps = overlaps ./ max(max(overlaps));
+        axesm eckert4;
+        framem; gridm;
+        colorbar;
+        title('Time evolution of StringState with 45deg opening angle (N=10, v=0)')
+        geoshow(lat, long, Z, 'DisplayType', 'texturemap');
+%         ax = gca;
+%         pcolor(overlaps);
+%         shading flat
+%         colorbar;
+%         xticks(linspace(1, n_phi, 5))
+%         xticklabels({'0', '\pi/2', '\pi', '3\pi/2', '2 \pi'})
+%         yticks([1, floor(n_theta/2), n_theta])
+%         yticklabels({'0', '\pi/4', '\pi/2'})
+%         xlabel('Azimuth angle', 'FontSize', 16);
+%         ylabel('Opening angle', 'FontSize', 16);
+%         title(sprintf('|Overlap| of 45 deg string state with states of different opening angles (N=10, v=0, t=%.1f)', t))
+%         
 end

@@ -55,7 +55,7 @@ classdef StringState
                     M = (varargin{1}.v(:) * varargin{2}.v(:)') ...
                         + (varargin{2}.v(:) * varargin{1}.v(:)');
                     
-                    % Normalize the string state so that Tr(A' * A) = 1
+                    % Normalize the string state so that Tr(M' * M) = 1
                     A = trace(M' * M);
                     M = M / sqrt(A);
                     obj.p = obj.M2p(M);
@@ -67,7 +67,25 @@ classdef StringState
                     cs2 = CoherentState(n2, obj.fs, CoordType.spherical);
                     obj = StringState(cs1, cs2, obj.fs);
                 end
-                
+            elseif nargin == 4
+                obj.fs = varargin{3};
+                if isa(varargin{1}, 'CoherentState')
+                    % Interpret as two CoherentStates
+                    M = 1i*(varargin{1}.v(:) * varargin{2}.v(:)') ...
+                        - 1i*(varargin{2}.v(:) * varargin{1}.v(:)');
+                    
+                    % Normalize the string state so that Tr(M' * M) = 1
+                    A = trace(M' * M);
+                    M = M / sqrt(A);
+                    obj.p = obj.M2p(M);
+                else
+                    % Interpret as (opening angle, azimuthal angle, etc.)
+                    n1 = [varargin{2}, varargin{1}, 1];  % [azimuth, elevation, radius]
+                    n2 = [varargin{2}, -varargin{1}, 1];
+                    cs1 = CoherentState(n1, obj.fs, CoordType.spherical);
+                    cs2 = CoherentState(n2, obj.fs, CoordType.spherical);
+                    obj = StringState(cs1, cs2, obj.fs, true);
+                end
             else
                 error('Inputs: ([CoherentStates, parametrization vector, opening angle]; FuzzySphere)')
             end
