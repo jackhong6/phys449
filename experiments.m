@@ -408,53 +408,30 @@ switch(n)
             theta = deg2rad(lat(1, ii));
             for jj = 1:n_phi
                 phi = deg2rad(long(jj, 1));                
-                ss1 = StringState(theta, phi, fs);
-                ss2 = StringState(theta, phi, fs, 1);
-                k01(ii, jj, :) = ss1.calculate_k0;
-                k02(ii, jj, :) = ss2.calculate_k0;
+                ss = StringState(theta, phi, fs);
+                k01(ii, jj, :) = ss.k0;
+                k02(ii, jj, :) = ss.ik0;
             end
         end
         
-        ss = StringState(pi/4, fs);
+        ss = StringState(pi/2, fs);
         kt = ss.kt(t);
         Z = zeros(size(lat));
+        
         for ii = 1:n_theta
             for jj = 1:n_phi
-                overlap1 = 2*abs(dot(squeeze(k01(ii, jj, :)), kt));
-                overlap2 = 2*abs(dot(squeeze(k02(ii, jj, :)), kt));
+                overlap1 = 2*abs(squeeze(k01(ii, jj, :))' * kt);
+                overlap2 = 2*abs(squeeze(k02(ii, jj, :))' * kt);
                 overlap = overlap1^2 + overlap2^2;
                 Z(jj, ii) = overlap;
                 Z(jj, 2*n_theta - ii + 1) = overlap;
             end
         end
-%         for ii = 1:n_theta
-%             x = round((n_seg * (1 - cos(thetas(ii)))) / 2); 
-%             n = n_seg - 2*x;
-%             phis = linspace(0, 2*pi, n);
-% 
-%             for jj = 1:n
-%                 ss = StringState(thetas(ii), phis(jj), fs);
-%                 k0(ii, x+jj, :) = ss.calculate_k0;
-%             end
-%         end
-      
-        %overlaps = imag(overlaps);
-        %overlaps = overlaps ./ max(max(overlaps));
-        axesm eckert4;
-        framem; gridm;
+
+        ax = axesm('mollweid');
+        gridm; framem;
+        title('String state (\theta = \pi/2, N=10)')
+        geoshow(ax, lat, long, Z, 'DisplayType', 'texturemap');
+        plabel('PlabelLocation', 30);
         colorbar;
-        title('Time evolution of StringState with 45deg opening angle (N=10, v=0)')
-        geoshow(lat, long, Z, 'DisplayType', 'texturemap');
-%         ax = gca;
-%         pcolor(overlaps);
-%         shading flat
-%         colorbar;
-%         xticks(linspace(1, n_phi, 5))
-%         xticklabels({'0', '\pi/2', '\pi', '3\pi/2', '2 \pi'})
-%         yticks([1, floor(n_theta/2), n_theta])
-%         yticklabels({'0', '\pi/4', '\pi/2'})
-%         xlabel('Azimuth angle', 'FontSize', 16);
-%         ylabel('Opening angle', 'FontSize', 16);
-%         title(sprintf('|Overlap| of 45 deg string state with states of different opening angles (N=10, v=0, t=%.1f)', t))
-%         
 end

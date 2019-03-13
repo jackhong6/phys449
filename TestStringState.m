@@ -136,6 +136,12 @@ classdef TestStringState < matlab.unittest.TestCase
                 ])
         end
         
+        function testOverlap(tc)
+            fs = FuzzySphere(1, 3, true);
+            ss = StringState(pi/2, 0, fs);
+            tc.verifyEqual(StringState.overlap(ss, ss), 1, 'AbsTol', tc.abstol)
+        end
+        
 %         function testAzimuthalAnglesForNorthSouthPoleStringState(tc)
 %             fs = FuzzySphere(1, 3, true);
 %             ss0 = StringState(pi/2, fs);

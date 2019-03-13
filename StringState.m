@@ -12,6 +12,7 @@ classdef StringState
         % m is the mass of the StringState
         % w is a vector of time evolution frequencies for the p vector
         %   elements in the k basis.
+        % ip and ik0 are the imaginary StringState
         %
         % Example: for a 3x3 string state the parametrization is
         %
@@ -27,7 +28,7 @@ classdef StringState
         %    | x8 |       -                                  -
         %    | x9 |
         %     -  -
-        p, fs, k0, dkdt0, m, w
+        p, ip, fs, k0, ik0, dkdt0, m, w
     end
     
     methods
@@ -55,10 +56,16 @@ classdef StringState
                     M = (varargin{1}.v(:) * varargin{2}.v(:)') ...
                         + (varargin{2}.v(:) * varargin{1}.v(:)');
                     
+                    iM = 1i*(varargin{1}.v(:) * varargin{2}.v(:)') ...
+                         - 1i*(varargin{2}.v(:) * varargin{1}.v(:)');
+                    
                     % Normalize the string state so that Tr(M' * M) = 1
                     A = trace(M' * M);
                     M = M / sqrt(A);
+                    iM = iM / sqrt(A);
+                    
                     obj.p = obj.M2p(M);
+                    obj.ip = obj.M2p(iM);
                 else
                     % Interpret as (opening angle, azimuthal angle, etc.)
                     n1 = [varargin{2}, varargin{1}, 1];  % [azimuth, elevation, radius]
@@ -66,25 +73,6 @@ classdef StringState
                     cs1 = CoherentState(n1, obj.fs, CoordType.spherical);
                     cs2 = CoherentState(n2, obj.fs, CoordType.spherical);
                     obj = StringState(cs1, cs2, obj.fs);
-                end
-            elseif nargin == 4
-                obj.fs = varargin{3};
-                if isa(varargin{1}, 'CoherentState')
-                    % Interpret as two CoherentStates
-                    M = 1i*(varargin{1}.v(:) * varargin{2}.v(:)') ...
-                        - 1i*(varargin{2}.v(:) * varargin{1}.v(:)');
-                    
-                    % Normalize the string state so that Tr(M' * M) = 1
-                    A = trace(M' * M);
-                    M = M / sqrt(A);
-                    obj.p = obj.M2p(M);
-                else
-                    % Interpret as (opening angle, azimuthal angle, etc.)
-                    n1 = [varargin{2}, varargin{1}, 1];  % [azimuth, elevation, radius]
-                    n2 = [varargin{2}, -varargin{1}, 1];
-                    cs1 = CoherentState(n1, obj.fs, CoordType.spherical);
-                    cs2 = CoherentState(n2, obj.fs, CoordType.spherical);
-                    obj = StringState(cs1, cs2, obj.fs, true);
                 end
             else
                 error('Inputs: ([CoherentStates, parametrization vector, opening angle]; FuzzySphere)')
@@ -97,17 +85,18 @@ classdef StringState
                 obj.k0 = obj.calculate_k0;
                 obj.dkdt0 = zeros(length(obj.p), 1);
             end
-        end
-        
-        function overlap = overlap0(self, ss, t)
-            % Return the normalized overlap between itself (at t=0) and a
-            % StringState ss at time=t
-            kt = ss.kt(t);
-            overlap = 2*abs(kt(:)' * self.k0(:));
+            
+            if ~isempty(obj.fs.la) && ~isempty(obj.ip)
+                obj.ik0 = obj.calculate_ik0;
+            end
         end
         
         function M = getM(self)
             M = self.p2M(self.p);
+        end
+        
+        function iM = getiM(self)
+            iM = self.p2M(self.ip);
         end
         
         function w = getw(self)
@@ -116,6 +105,10 @@ classdef StringState
         
         function k0 = calculate_k0(self)
             k0 = FSLaplacian.p2kBasis(self.fs.la, self.p);
+        end
+        
+        function ik0 = calculate_ik0(self)
+            ik0 = FSLaplacian.p2kBasis(self.fs.la, self.ip);
         end
         
         function dkdt = calculate_dkdt0(self, v, n, coordType)
@@ -133,6 +126,12 @@ classdef StringState
             % Return the time evolution k0 at time t. t must be a scalar.
             % Must assign properties w, k0, and dkdt0 before using.
             k_t = self.k0.*cos(self.w*t) + (self.dkdt0 ./ self.w) .* sin(self.w*t);
+        end
+        
+        function ik_t = ikt(self, t)
+            % Return the time evolution ik0 at time t. t must be a scalar.
+            % Must assign properties w, k0, and dkdt0 before using.
+            ik_t = self.ik0.*cos(self.w*t) + (self.dkdt0 ./ self.w) .* sin(self.w*t);
         end
     end
     
@@ -181,6 +180,25 @@ classdef StringState
                 p(imag_ind) = imag(kth_diag);
                 
                 start_ind = end_ind + 1;
+            end
+        end
+        
+        function M = k2M(k, la)
+            M = StringState.p2M(FSLaplacian.k2pBasis(la, k));
+        end
+        
+        function result = overlap(varargin)
+            % Return the normalized overlap between states a and b.
+            if nargin == 4
+                overlap1 = abs(varargin{1}(:)' * varargin{2}(:));
+                overlap2 = abs(varargin{3}(:)' * varargin{4}(:));
+                result = 2 * (overlap1^2 + overlap2^2);
+            elseif isa(varargin{1}, 'StringState')
+                a = varargin{1};
+                b = varargin{2};
+                result = StringState.overlap(a.k0, b.k0, a.ik0, b.ik0);
+            else
+                
             end
         end
     end
