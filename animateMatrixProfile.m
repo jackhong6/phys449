@@ -1,6 +1,11 @@
 function [F,V] = animateMatrixProfile(t, ss)
-%ANIMATEMATRIXPOFILE Summary of this function goes here
-%   Detailed explanation goes here
+%ANIMATEMATRIXPOFILE Create animation of the sum of the absolute magnitude 
+%                    squared of each diagonal of the StringState matrix. 
+%                    
+%   t is a vector of times to evaluate the matrix
+%   ss is a StringState
+%   F is a vector of frames
+%   V is a video in .mp4 format
 
 fig = figure();
 N = sqrt(length(ss.p));
@@ -36,9 +41,9 @@ for n = 1:length(t)
     Mt = StringState.k2M(ss.kt(t(n)), ss.fs.la);
     iMt = StringState.k2M(ss.ikt(t(n)), ss.fs.la);
     
-    for n = 1:length(diagonals)
-        matrix_profile1(n) = sum(abs(diag(Mt, diagonals(n))).^2);
-        matrix_profile2(n) = sum(abs(diag(iMt, diagonals(n))).^2);
+    for m = 1:length(diagonals)
+        matrix_profile1(m) = sum(abs(diag(Mt, diagonals(m))).^2);
+        matrix_profile2(m) = sum(abs(diag(iMt, diagonals(m))).^2);
     end
     
     bar1.YData = matrix_profile1;
