@@ -1,4 +1,4 @@
-# phys449
+# PHYS 449 code
 
 MATLAB code to calculate the time evolution of string states on a fuzzy sphere.
 REQUIRES: MATLAB Mapping Toolbox (https://www.mathworks.com/products/mapping.html)
