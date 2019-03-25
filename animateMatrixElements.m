@@ -55,7 +55,8 @@ V = VideoWriter('../Videos/matrix_elements_animation.mp4', 'MPEG-4');
 V.FrameRate = 7;
 open(V);
 
-axes = [ax1, ax2, ax3, ax4, ax5, ax6];
+%axes = [ax1, ax2, ax3, ax4, ax5, ax6];
+
 for n = 1:length(t)
     Mt = StringState.k2M(ss.kt(t(n)), ss.fs.la);
     iMt = StringState.k2M(ss.ikt(t(n)), ss.fs.la);

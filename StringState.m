@@ -95,8 +95,16 @@ classdef StringState
             M = self.p2M(self.p);
         end
         
+        function Mt = getMt(self, t)
+            Mt = self.k2M(self.kt(t), self.fs.la);
+        end
+        
         function iM = getiM(self)
             iM = self.p2M(self.ip);
+        end
+        
+        function iMt = getiMt(self, t)
+            iMt = self.k2M(self.ikt(t), self.fs.la);
         end
         
         function w = getw(self)
@@ -132,6 +140,36 @@ classdef StringState
             % Return the time evolution ik0 at time t. t must be a scalar.
             % Must assign properties w, k0, and dkdt0 before using.
             ik_t = self.ik0.*cos(self.w*t) + (self.dkdt0 ./ self.w) .* sin(self.w*t);
+        end
+        
+        function h = draw(self)
+            % DRAW Plot a string state using a map projection (mollweid).
+            % ss StringState to be drawn
+            % k0 array of string state k0 to overlap 
+
+            n_theta = 30;
+            n_phi = 4 * n_theta;
+            theta = linspace(pi/2, 0, n_theta);
+            lat = linspace(-90, 90, 2*n_theta);
+            long = linspace(-180, 180, n_phi);
+            Z = zeros(length(lat), length(long));
+            [longM, latM] = meshgrid(long, lat);
+
+            for ii = 1:n_theta
+                for jj = 1:n_phi
+                    phi = deg2rad(long(jj));
+                    ssb = StringState(theta(ii), phi, self.fs);
+                    overlap = StringState.overlap(self, ssb);
+                    Z(ii, jj) = overlap;
+                    Z(2*n_theta - ii + 1, jj) = overlap;
+                end
+            end
+
+            axesm('mollweid');
+            %title('String state (\theta = \pi/2, N=10)')
+            h = geoshow(latM, longM, Z, 'DisplayType', 'texturemap');
+            %plabel('PlabelLocation', 30);
+            colorbar;
         end
     end
     
@@ -189,14 +227,14 @@ classdef StringState
         
         function result = overlap(varargin)
             % Return the normalized overlap between states a and b.
-            if nargin == 4
-                overlap1 = abs(varargin{1}(:)' * varargin{2}(:));
-                overlap2 = abs(varargin{3}(:)' * varargin{4}(:));
-                result = 2 * (overlap1^2 + overlap2^2);
+            if nargin == 3
+                overlap1 = 2*abs(varargin{1}(:)' * varargin{2}(:));
+                overlap2 = 2*abs(varargin{1}(:)' * varargin{3}(:));
+                result = (overlap1^2 + overlap2^2);
             elseif isa(varargin{1}, 'StringState')
                 a = varargin{1};
                 b = varargin{2};
-                result = StringState.overlap(a.k0, b.k0, a.ik0, b.ik0);
+                result = StringState.overlap(a.k0, b.k0, b.ik0);
             else
                 
             end

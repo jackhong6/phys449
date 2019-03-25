@@ -1,5 +1,5 @@
 function k0 = getk0Array(fs, inputArg2)
-%UNTITLED3 Summary of this function goes here
+%GETk0ARRAY Summary of this function goes here
 %   Detailed explanation goes here
 N = size(fs.x, 1);
 n_theta = 50;

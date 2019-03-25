@@ -414,7 +414,7 @@ switch(n)
             end
         end
         
-        ss = StringState(pi/2, fs);
+        ss = StringState(0, fs);
         kt = ss.kt(t);
         Z = zeros(size(lat));
         
