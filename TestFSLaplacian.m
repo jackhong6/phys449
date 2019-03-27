@@ -23,14 +23,48 @@ classdef TestFSLaplacian < matlab.unittest.TestCase
             tc.verifyEqual(la.getFullK, blkdiag(K1, K2, K3), 'AbsTol', tc.abstol);
         end
         
-        function testLaplacianMatchesKMatrix(tc)
-            fs = FuzzySphere(1, 7);
-            la = FSLaplacian(fs);
-            p = 1:49;
-            Phi = StringState(p, fs);
-            p1 = -StringState.M2p(FSLaplacian.do(fs, Phi.getM));
-            p2 = la.Ktimes(p);
+        function testLaplacianMatchesKMatrixSingleTimeStep(tc)
+            N = 3;
+            fs = FuzzySphere(1, N, true);
+            ss = StringState(pi/3, fs);
+            
+            % test one time step
+            p1 = StringState.M2p(FSLaplacian.do(fs, ss.getM));
+            p2 = fs.la.Ktimes(ss.p);
             tc.verifyEqual(p1, p2, 'AbsTol', tc.abstol);
+            
+            p1 = StringState.M2p(FSLaplacian.do(fs, ss.getiM));
+            p2 = fs.la.Ktimes(ss.ip);
+            tc.verifyEqual(p1, p2, 'AbsTol', tc.abstol);
+        end
+        
+        function testLaplacianMatchesKMatrix(tc) 
+            N = 3;
+            fs = FuzzySphere(1, N, true);
+            ss = StringState(pi/4, fs);
+            
+            % test multiple time steps
+            tspan = [0, 2];
+            v0 = zeros(N);
+            M = ss.getM;
+            y0 = [M(:); v0(:)];
+            [t, y] = solveEOM(tspan, y0, fs);
+            
+            for ii = 1:length(t)
+                M1 = reshape(y(ii, 1:N^2), N, N);
+                M2 = ss.getMt(t(ii));
+                tc.verifyEqual(M1, M2, 'RelTol', 0.01)
+            end
+            
+            iM = ss.getiM;
+            y0 = [iM(:); v0(:)];
+            [t, y] = solveEOM(tspan, y0, fs);
+            
+            for ii = 1:length(t)
+                M1 = reshape(y(ii, 1:N^2), N, N);
+                M2 = ss.getiMt(t(ii));
+                tc.verifyEqual(M1, M2, 'RelTol', 0.01)
+            end
         end
         
         function testChangeBasis(tc)

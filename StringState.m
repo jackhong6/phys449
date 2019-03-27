@@ -133,13 +133,13 @@ classdef StringState
         function k_t = kt(self, t)
             % Return the time evolution k0 at time t. t must be a scalar.
             % Must assign properties w, k0, and dkdt0 before using.
-            k_t = self.k0.*cos(self.w*t) + (self.dkdt0 ./ self.w) .* sin(self.w*t);
+            k_t = self.k0 .* cos(self.w*t) + (self.dkdt0 ./ self.w) .* sin(self.w*t);
         end
         
         function ik_t = ikt(self, t)
             % Return the time evolution ik0 at time t. t must be a scalar.
             % Must assign properties w, k0, and dkdt0 before using.
-            ik_t = self.ik0.*cos(self.w*t) + (self.dkdt0 ./ self.w) .* sin(self.w*t);
+            ik_t = self.ik0 .* cos(self.w*t) + (self.dkdt0 ./ self.w) .* sin(self.w*t);
         end
         
         function h = draw(self)
