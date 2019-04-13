@@ -19,17 +19,26 @@ classdef FuzzySphere < handle
         % x, y, z are NxN matrices.
         % R is the radius of the sphere.
         % la is the FSLaplacian on the sphere.
-        x, y, z, R, la
+        % kv is an array of vertical StringState k vectors on the sphere.
+        %     i.e. same longitudes, +/- latitudes. M = |a><b| + |b><a|
+        % ikv is the corresponding antisymmetric vectors of kv
+        %     iM = i|a><b| - i |b><a|
+        % kh is an array of horizontal StringState k vectors on the sphere.
+        %     i.e. same latitudes, +/- longitudes.
+        % ikh is the corresponding antisymmetric vectors of kh
+        x, y, z, R, la, latM, longM, kv, ikv, kh, ikh, Av, Ah
     end
     
     methods
-        function fs = FuzzySphere(R, N, la)
+        function fs = FuzzySphere(R, N, la, nlat)
             % CONSTRUCTOR Initialize the 3 NxN matrices
             % in the basis where fs.z is diagonal.
             % la is optional and can be a boolean or of type FSLaplacian
             % if la is an FSLaplacian then simply assign it to the la field.
             % if la is true then calculate the FSLaplacian for the sphere,
             % otherwise do not assign the la field.
+            % if nlat is not zero, calculate an array of k vectos for
+            % drawing/animating with resolution (nlat, nlong=2*nlat).
             if nargin > 0
                 j = (N - 1) / 2;
                 m = j : -1 : -j;
@@ -47,11 +56,17 @@ classdef FuzzySphere < handle
                 fs.z = A * diag(m);
                 fs.R = R;
                 
-                if nargin == 3 
+                if nargin > 2 
                     if isa(la, 'FSLaplacian')
                         fs.la = la;
                     elseif la
                         fs.la = FSLaplacian(fs);
+                    end
+                end
+                
+                if nargin == 4
+                    if ~(nlat == 0) && ~isempty(fs.la)
+                        fs.assign_karrays(nlat)
                     end
                 end
             end
@@ -116,6 +131,50 @@ classdef FuzzySphere < handle
             end
                             
             Xn = n(1)*fs.x + n(2)*fs.y + n(3)*fs.z;
+        end
+        
+        function obj = assign_karrays(self, nlat)
+            N = size(self.x, 1);
+            nlong = 2*nlat;
+            lat = linspace(-90, 90, nlat);
+            long = linspace(-180, 180, nlong);
+            [self.longM, self.latM] = meshgrid(long, lat);
+           
+            self.kv = zeros(nlat, nlong, N^2);
+            self.ikv = zeros(nlat, nlong, N^2);
+            self.kh = zeros(nlat, nlong, N^2);
+            self.ikh = zeros(nlat, nlong, N^2);
+            self.Av = zeros(nlat, nlong, N^2);
+            self.Ah = zeros(nlat, nlong, N^2);
+            
+            % possible 2 times speed up here by using symmetry
+            for ii = 1:nlat
+                theta = deg2rad(lat(ii));
+                for jj = 1:nlong
+                    phi = deg2rad(long(jj));
+                    
+                    ssv = StringState(theta, phi, self);
+                    
+                    cs1 = CoherentState([phi, theta, 1], self);
+                    cs2 = CoherentState([-phi, theta, 1], self);
+                    ssh = StringState(cs1, cs2, self);
+                    
+                    self.kv(ii, jj, :) = ssv.k0;
+                    self.ikv(ii, jj, :) = ssv.ik0;
+                    self.kh(ii, jj, :) = ssh.k0;
+                    self.ikh(ii, jj, :) = ssh.ik0;
+                    
+                    Mv0 = StringState.k2M(ssv.k0, self.la);
+                    iMv0 = StringState.k2M(ssv.ik0, self.la);
+                    Av0 = 0.5 * (Mv0 - 1i*iMv0);
+                    Mh0 = StringState.k2M(ssh.k0, self.la);
+                    iMh0 = StringState.k2M(ssh.ik0, self.la);
+                    Ah0 = 0.5 * (Mh0 - 1i*iMh0);
+                    
+                    self.Av(ii,jj,:) = Av0(:);
+                    self.Ah(ii,jj,:) = Ah0(:);
+                end
+            end
         end
     end
 end

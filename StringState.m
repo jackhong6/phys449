@@ -38,7 +38,7 @@ classdef StringState
             if nargin == 2
                 obj.fs = varargin{2};
                 if isscalar(varargin{1})
-                    % Interpret as an opening angle in radians
+                    % Interpret first arg as an opening angle in radians
                     n1 = [0, varargin{1}, 1];  % [azimuth, elevation, radius]
                     n2 = [0, -varargin{1}, 1];
                     cs1 = CoherentState(n1, obj.fs, CoordType.spherical);
@@ -50,9 +50,9 @@ classdef StringState
                 end
                 
             elseif nargin == 3
-                 obj.fs = varargin{3};
+                obj.fs = varargin{3};
                 if isa(varargin{1}, 'CoherentState')
-                    % Interpret as two CoherentStates
+                    % Interpret first 2 args as CoherentStates
                     M = (varargin{1}.v(:) * varargin{2}.v(:)') ...
                         + (varargin{2}.v(:) * varargin{1}.v(:)');
                     
@@ -142,34 +142,106 @@ classdef StringState
             ik_t = self.ik0 .* cos(self.w*t) + (self.dkdt0 ./ self.w) .* sin(self.w*t);
         end
         
-        function h = draw(self)
+        function frame = draw(self, t)
             % DRAW Plot a string state using a map projection (mollweid).
             % ss StringState to be drawn
-            % k0 array of string state k0 to overlap 
+            % t is the time to draw (scalar)
+            Z = zeros(size(self.fs.latM));
 
-            n_theta = 30;
-            n_phi = 4 * n_theta;
-            theta = linspace(pi/2, 0, n_theta);
-            lat = linspace(-90, 90, 2*n_theta);
-            long = linspace(-180, 180, n_phi);
-            Z = zeros(length(lat), length(long));
-            [longM, latM] = meshgrid(long, lat);
-
-            for ii = 1:n_theta
-                for jj = 1:n_phi
-                    phi = deg2rad(long(jj));
-                    ssb = StringState(theta(ii), phi, self.fs);
-                    overlap = StringState.overlap(self, ssb);
+            for ii = 1:size(Z, 1)
+                for jj = 1:size(Z, 2)
+                    kt = self.kt(t);
+                    overlap_v  = 2*abs(dot(squeeze(self.fs.kv(ii, jj, :)), kt));
+                    overlap_iv = 2*abs(dot(squeeze(self.fs.ikv(ii, jj, :)), kt));
+                    overlap_h  = 2*abs(dot(squeeze(self.fs.kh(ii, jj, :)), kt));
+                    overlap_ih = 2*abs(dot(squeeze(self.fs.ikh(ii, jj, :)), kt));
+                    overlap = sqrt(overlap_v^2 + overlap_iv^2 + overlap_h^2 + overlap_ih^2);
                     Z(ii, jj) = overlap;
-                    Z(2*n_theta - ii + 1, jj) = overlap;
                 end
             end
 
             axesm('mollweid');
-            %title('String state (\theta = \pi/2, N=10)')
-            h = geoshow(latM, longM, Z, 'DisplayType', 'texturemap');
+            %title('String state')
+            geoshow(self.fs.latM, self.fs.longM, Z, 'DisplayType', 'texturemap');
             %plabel('PlabelLocation', 30);
+            %colorbar;
+            frame = getframe(gcf);
+        end
+            
+        function frame = drawA(self, t)
+            % DRAWA Draw the non-hermitian string state A = 0.5 * (M - iM) 
+            %       using a map projection (mollweid).
+            % ss StringState to be drawn. 
+            % t is the time to draw (scalar)
+            Z = zeros(size(self.fs.latM));
+                
+            for ii = 1:size(Z, 1)
+                for jj = 1:size(Z, 2)
+                    kt = self.kt(t);
+                    ikt = self.ikt(t);
+                    Mt = StringState.k2M(kt, self.fs.la);
+                    iMt = StringState.k2M(ikt, self.fs.la);
+                    A = 0.5 * (Mt - 1i*iMt);
+
+                    overlap_v  = abs(A(:)' * squeeze(self.fs.Av(ii, jj, :)));
+                    %overlap_h = abs(A(:)' * squeeze(self.fs.Ah(ii, jj, :)));
+                    overlap = sqrt(overlap_v^2);% + overlap_h^2);
+                    Z(ii, jj) = overlap;
+                end
+            end
+
+            axesm('mollweid');
+            %title('String state')
+            geoshow(self.fs.latM, self.fs.longM, Z, 'DisplayType', 'texturemap');
+            %plabel('PlabelLocation', 30);
+            %colorbar;
+            frame = getframe(gcf);
+        end
+        
+        function [F, V] = animate(self, t)
+            % ANIMATE Create video of the string state at the given times.
+            %         t is an array of time steps
+            %         F is an array of frames
+            %         V is the video in MP4 format
+            figure();
+            axesm('mollweid');
+            F(length(t)) = struct('cdata',[],'colormap',[]);
             colorbar;
+            
+            V = VideoWriter('../Videos/animateStringState.mp4', 'MPEG-4');
+            V.FrameRate = 5;
+            
+            open(V);
+            for n = 1:length(t)
+                frame = self.draw(t(n));
+                F(n) = frame;
+                writeVideo(V, frame);
+            end
+            close(V);
+            
+        end
+        
+        function [F, V] = animateA(self, t)
+            % ANIMATE Create video of the string state at the given times.
+            %         t is an array of time steps
+            %         F is an array of frames
+            %         V is the video in MP4 format
+            figure();
+            axesm('mollweid');
+            F(length(t)) = struct('cdata',[],'colormap',[]);
+            colorbar;
+            
+            V = VideoWriter('../Videos/animateStringStateA.mp4', 'MPEG-4');
+            V.FrameRate = 5;
+            
+            open(V);
+            for n = 1:length(t)
+                frame = self.drawA(t(n));
+                F(n) = frame;
+                writeVideo(V, frame);
+            end
+            close(V);
+            
         end
     end
     
