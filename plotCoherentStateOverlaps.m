@@ -10,7 +10,7 @@ for ii = 1:length(Ns)
     for jj = 1:length(azimuths)
         n = [azimuths(jj), 0, 1];
         cs1 = CoherentState(n, fs, CoordType.spherical);
-        overlaps(ii, jj) = abs(cs1.v(:)' * cs.v(:));
+        overlaps(ii, jj) = abs(cs1.v(:)' * cs.v(:))^2;
     end
 end
 
@@ -18,10 +18,10 @@ hold on
 for ii = 1:length(Ns)
     txt = ['N = ',num2str(Ns(ii))];
     plot(rad2deg(azimuths), overlaps(ii, :), ...
-    'linewidth', 1.2, 'DisplayName', txt)
+    'linewidth', 1.1, 'DisplayName', txt)
 end
 
-title('Overlap with coherent states along the equator')
+%title('Overlap with coherent states along the equator')
 xlabel('Azimuthal angle (degrees)', 'interpreter', 'latex')
-ylabel('Overlap $\langle x | p \rangle$', 'interpreter', 'latex')
+ylabel('Overlap $|\langle x | p \rangle|^2$', 'interpreter', 'latex')
 legend show

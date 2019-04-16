@@ -127,12 +127,10 @@ classdef FSLaplacian < handle
     methods (Static)
         function result = do(fs, Phi)
         % LAPLACIAN Return the laplacian of a string state by applying the
-        % commutator with the angular momentum matrices -1/R^2 * [Li, [Li,Phi]]
+        % commutator with the angular momentum matrices -1/R^2 * [Ji, [Ji,Phi]]
         N = size(fs.x, 1);
-    
         A = (N^2 - 1) / (4 * fs.R^4);
-
-        result = A * (commutator(fs.x, commutator(fs.x, Phi))...
+        result = A*(commutator(fs.x, commutator(fs.x, Phi))...
             + commutator(fs.y, commutator(fs.y, Phi))...
             + commutator(fs.z, commutator(fs.z, Phi)));
         end

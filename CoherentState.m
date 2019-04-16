@@ -62,7 +62,7 @@ classdef CoherentState
                     phi = deg2rad(long(jj));
                     nb = [phi, theta, 1];
                     csb = CoherentState(nb, self.fs, CoordType.spherical);
-                    overlaps(ii, jj) = abs(csb.v(:)' * self.v(:));
+                    overlaps(ii, jj) = abs(csb.v(:)' * self.v(:))^2;
                 end
             end
             

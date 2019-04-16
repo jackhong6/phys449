@@ -119,15 +119,15 @@ classdef StringState
             ik0 = FSLaplacian.p2kBasis(self.fs.la, self.ip);
         end
         
-        function dkdt = calculate_dkdt0(self, v, n, coordType)
+        function dkdt0 = calculate_dkdt0(self, v, n, coordType)
             % Return a vector of velocities for the k vector given
             % initial speed v and axis of rotation n.
             % n is assumed to be a unit vector pointing in the direction
             % of the axis of rotation. The direction of rotation is given
             % by the right hand rule.
-            dMdt = 1i * v * commutator(self.fs.dot(n, coordType), self.getM);
-            dpdt = StringState.M2p(dMdt);
-            dkdt = FSLaplacian.p2kBasis(self.fs.la, dpdt);
+            dMdt0 = 1i * v * commutator(self.fs.dot(n, coordType), self.getM);
+            dpdt0 = StringState.M2p(dMdt0);
+            dkdt0 = FSLaplacian.p2kBasis(self.fs.la, dpdt0);
         end
         
         function k_t = kt(self, t)

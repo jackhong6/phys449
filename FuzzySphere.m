@@ -106,6 +106,21 @@ classdef FuzzySphere < handle
             end
         end
         
+        function result = Jx(self)
+            N = size(self.x, 1);
+            result = sqrt(N^2-1) / 2 / self.R * self.x;
+        end
+        
+        function result = Jy(self)
+            N = size(self.x, 1);
+            result = sqrt(N^2-1) / 2 / self.R * self.y;
+        end
+        
+        function result = Jz(self)
+            N = size(self.x, 1);
+            result = sqrt(N^2-1) / 2 / self.R * self.z;
+        end
+        
         function Xn = dot(fs, n, coordType)
             % FUZZYSPHERE.DOT Return the NxN matrix resulting from the dot
             % product between a unit vector n and the 3 x,y,z matrices.
