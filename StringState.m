@@ -165,6 +165,7 @@ classdef StringState
             geoshow(self.fs.latM, self.fs.longM, Z, 'DisplayType', 'texturemap');
             %plabel('PlabelLocation', 30);
             %colorbar;
+            caxis([0, 1])
             frame = getframe(gcf);
         end
             
